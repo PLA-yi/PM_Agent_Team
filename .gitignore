@@ -1,0 +1,28 @@
+# Secrets — 严禁提交
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+bin/
+dist/
+*.exe
+
+# Go
+server/server
+server/*.test
+
+# Node
+node_modules/
+*.log
+.DS_Store
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+coverage.out
+*.tsbuildinfo

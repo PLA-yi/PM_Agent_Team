@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: pmhive-postgres
+    environment:
+      POSTGRES_USER: pmhive
+      POSTGRES_PASSWORD: pmhive
+      POSTGRES_DB: pmhive
+    ports:
+      - "5432:5432"
+    volumes:
+      - pmhive_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pmhive"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pmhive_pg_data:
