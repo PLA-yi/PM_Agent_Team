@@ -1,0 +1,268 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" width="1400" height="900">
+  <!-- 背景 -->
+  <rect width="1400" height="900" fill="#FAFAFA"/>
+
+  <!-- 顶部 nav -->
+  <rect width="1400" height="48" fill="#FFFFFF"/>
+  <rect y="47" width="1400" height="1" fill="#E4E4E7"/>
+  <text x="20" y="30" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#09090B">PM Agent Team</text>
+  <rect x="138" y="14" width="40" height="20" rx="4" fill="#F4F4F5"/>
+  <text x="158" y="28" text-anchor="middle" font-family="SF Mono, monospace" font-size="11" fill="#52525B">v0.4</text>
+  <text x="200" y="30" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="0.5">PROJECT</text>
+  <rect x="262" y="14" width="180" height="20" rx="4" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <text x="270" y="28" font-family="-apple-system, sans-serif" font-size="12" fill="#09090B">AI 笔记 SaaS 立项</text>
+  <rect x="450" y="14" width="20" height="20" rx="4" fill="#FFFFFF" stroke="#E4E4E7"/>
+  <text x="460" y="28" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="13" fill="#09090B">+</text>
+
+  <text x="1180" y="30" font-family="-apple-system, sans-serif" font-size="11" fill="#16A34A">● Slack</text>
+  <text x="1234" y="30" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">○ Jira</text>
+  <text x="1280" y="30" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">AI PM Agent Cluster</text>
+
+  <!-- 左栏 -->
+  <g transform="translate(16, 64)">
+    <!-- Composer card -->
+    <rect width="320" height="280" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <!-- Segmented control -->
+    <g transform="translate(16, 16)">
+      <rect width="288" height="32" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+      <rect width="144" height="32" rx="6" fill="#18181B"/>
+      <text x="72" y="21" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#FFFFFF">竞品调研</text>
+      <text x="216" y="21" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#52525B">访谈分析</text>
+      <line x1="144" y1="0" x2="144" y2="32" stroke="#E4E4E7"/>
+    </g>
+    <g transform="translate(16, 50)">
+      <rect width="288" height="32" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+      <text x="72" y="21" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#52525B">PRD 起草</text>
+      <text x="216" y="21" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#52525B">社交聆听</text>
+      <line x1="144" y1="0" x2="144" y2="32" stroke="#E4E4E7"/>
+    </g>
+    <!-- Textarea -->
+    <rect x="16" y="92" width="288" height="84" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="24" y="110" font-family="-apple-system, sans-serif" font-size="12" fill="#09090B">国内 AI 笔记类产品</text>
+    <!-- CTA button -->
+    <rect x="16" y="184" width="288" height="34" rx="6" fill="#18181B"/>
+    <text x="160" y="205" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#FFFFFF">启动 竞品调研   ⌘↵</text>
+    <!-- chips -->
+    <rect x="16" y="230" width="100" height="22" rx="11" fill="#F4F4F5"/>
+    <text x="66" y="245" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#52525B">国内 AI 笔记…</text>
+    <rect x="120" y="230" width="120" height="22" rx="11" fill="#F4F4F5"/>
+    <text x="180" y="245" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#52525B">海外低代码工作流…</text>
+
+    <!-- Task list card -->
+    <rect y="296" width="320" height="540" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="16" y="320" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B" letter-spacing="0.5">TASKS</text>
+    <text x="304" y="320" text-anchor="end" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">3</text>
+    <line x1="0" y1="332" x2="320" y2="332" stroke="#E4E4E7"/>
+    <!-- task 1 (active) -->
+    <rect y="332" width="320" height="84" fill="#F4F4F5"/>
+    <rect width="3" height="84" y="332" fill="#18181B"/>
+    <g transform="translate(16, 348)">
+      <rect width="32" height="14" rx="3" fill="#F4F4F5" stroke="#E4E4E7"/>
+      <text x="16" y="11" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="9" font-weight="500" fill="#52525B">竞品</text>
+      <circle cx="44" cy="7" r="3" fill="#16A34A"/>
+      <text x="54" y="11" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">已完成</text>
+      <text x="272" y="11" text-anchor="end" font-family="SF Mono, monospace" font-size="11" fill="#71717A">100%</text>
+      <text y="32" font-family="-apple-system, sans-serif" font-size="13" fill="#09090B">国内 AI 笔记类产品</text>
+      <text y="55" font-family="SF Mono, monospace" font-size="11" fill="#71717A">done · 12:09</text>
+    </g>
+    <line x1="16" y1="416" x2="320" y2="416" stroke="#E4E4E7"/>
+    <!-- task 2 (running) -->
+    <g transform="translate(16, 432)">
+      <rect width="32" height="14" rx="3" fill="#F4F4F5" stroke="#E4E4E7"/>
+      <text x="16" y="11" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="9" font-weight="500" fill="#52525B">PRD</text>
+      <circle cx="44" cy="7" r="3" fill="#CA8A04"/>
+      <text x="54" y="11" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">运行中</text>
+      <text x="272" y="11" text-anchor="end" font-family="SF Mono, monospace" font-size="11" fill="#71717A">55%</text>
+      <text y="32" font-family="-apple-system, sans-serif" font-size="13" fill="#09090B">做一个 PMHive 演示页</text>
+      <text y="55" font-family="SF Mono, monospace" font-size="11" fill="#71717A">stories · 12:14</text>
+    </g>
+    <line x1="16" y1="500" x2="320" y2="500" stroke="#E4E4E7"/>
+    <!-- task 3 (followup) -->
+    <g transform="translate(16, 516)">
+      <rect width="32" height="14" rx="3" fill="#F4F4F5" stroke="#E4E4E7"/>
+      <text x="16" y="11" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="9" font-weight="500" fill="#52525B">竞品</text>
+      <rect x="38" width="36" height="14" rx="3" fill="#FF9500" fill-opacity="0.15"/>
+      <text x="56" y="11" text-anchor="middle" font-family="SF Mono, monospace" font-size="9" font-weight="500" fill="#FF9500">追问</text>
+      <circle cx="80" cy="7" r="3" fill="#16A34A"/>
+      <text x="90" y="11" font-family="-apple-system, sans-serif" font-size="11" fill="#71717A">已完成</text>
+      <text x="272" y="11" text-anchor="end" font-family="SF Mono, monospace" font-size="11" fill="#71717A">100%</text>
+      <text y="32" font-family="-apple-system, sans-serif" font-size="13" fill="#09090B">↳ 再加一家国内竞品 Lark</text>
+      <text y="55" font-family="SF Mono, monospace" font-size="11" fill="#71717A">done · 12:18</text>
+    </g>
+  </g>
+
+  <!-- 中栏 Agent Trace -->
+  <g transform="translate(352, 64)">
+    <rect width="500" height="772" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <!-- header -->
+    <line x1="0" y1="40" x2="500" y2="40" stroke="#E4E4E7"/>
+    <text x="16" y="26" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B" letter-spacing="0.5">AGENT TRACE</text>
+    <text x="484" y="26" text-anchor="end" font-family="SF Mono, monospace" font-size="11" fill="#71717A">done · 100% · 49 events</text>
+    <!-- rows -->
+    <g transform="translate(0, 50)" font-family="SF Mono, monospace" font-size="11">
+      <!-- row 01 -->
+      <g transform="translate(16, 0)">
+        <text x="0" y="14" fill="#A1A1AA">01</text>
+        <text x="32" y="14" font-weight="500" fill="#09090B">调度员</text>
+        <text x="92" y="14" fill="#71717A">阶段启动</text>
+        <text x="160" y="14" fill="#27272A">进入 <tspan fill="#FF9500" font-weight="500">规划阶段</tspan> · 规划员</text>
+      </g>
+      <!-- row 02 -->
+      <g transform="translate(16, 26)">
+        <text x="0" y="14" fill="#A1A1AA">02</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">规划员</text>
+        <text x="92" y="14" fill="#71717A">产出</text>
+        <text x="160" y="14" fill="#27272A">5 个调研维度，5 个候选竞品 · Notion / FlowUs…</text>
+      </g>
+      <!-- row 03 stage start -->
+      <g transform="translate(16, 52)">
+        <text x="0" y="14" fill="#A1A1AA">03</text>
+        <text x="32" y="14" font-weight="500" fill="#09090B">调度员</text>
+        <text x="92" y="14" fill="#71717A">阶段启动</text>
+        <text x="160" y="14" fill="#27272A">进入 <tspan fill="#FF9500" font-weight="500">研究阶段</tspan> · 搜索员 + 抓取员 + 社聆员 并行</text>
+      </g>
+      <!-- row 04 social start -->
+      <g transform="translate(16, 78)">
+        <text x="0" y="14" fill="#A1A1AA">04</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">社聆员</text>
+        <text x="92" y="14" fill="#71717A">思考</text>
+        <text x="160" y="14" fill="#27272A">已鉴权：Reddit · 未配 key：X / 抖音 / TikTok</text>
+      </g>
+      <!-- row 05 tool call -->
+      <g transform="translate(16, 104)">
+        <text x="0" y="14" fill="#A1A1AA">05</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">社聆员</text>
+        <text x="92" y="14" fill="#71717A">调用工具</text>
+        <text x="160" y="14" fill="#27272A">调用 <tspan font-weight="500">Reddit</tspan>，关键词："Notion"</text>
+      </g>
+      <!-- row 06 tool result -->
+      <g transform="translate(16, 130)">
+        <text x="0" y="14" fill="#A1A1AA">06</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">社聆员</text>
+        <text x="92" y="14" fill="#71717A">工具返回</text>
+        <text x="160" y="14" fill="#27272A">Reddit 返回 200 条，过滤后剩 184，新增 <tspan fill="#16A34A">+184</tspan></text>
+      </g>
+      <!-- row reviewer -->
+      <g transform="translate(16, 156)">
+        <text x="0" y="14" fill="#A1A1AA">07</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">复审员</text>
+        <text x="92" y="14" fill="#71717A">产出</text>
+        <text x="160" y="14" fill="#27272A">综合分 <tspan fill="#CA8A04" font-weight="500">6.8/10</tspan> · 需修改 · 5 条改进意见</text>
+      </g>
+      <!-- row coordinator thought -->
+      <g transform="translate(16, 182)">
+        <text x="0" y="14" fill="#A1A1AA">08</text>
+        <text x="32" y="14" font-weight="500" fill="#09090B">调度员</text>
+        <text x="92" y="14" fill="#71717A">思考</text>
+        <text x="160" y="14" fill="#27272A">复审分 6.8 &lt; 7，触发 <tspan fill="#27272A" font-weight="500">自校正重写</tspan></text>
+      </g>
+      <!-- row writer rewrite -->
+      <g transform="translate(16, 208)">
+        <text x="0" y="14" fill="#A1A1AA">09</text>
+        <text x="32" y="14" font-weight="500" fill="#27272A">撰写员</text>
+        <text x="92" y="14" fill="#71717A">开始执行</text>
+        <text x="160" y="14" fill="#27272A">开始重写报告（基于 5 条复审意见）</text>
+      </g>
+      <!-- row task succeeded -->
+      <g transform="translate(16, 234)">
+        <text x="0" y="14" fill="#A1A1AA">10</text>
+        <text x="32" y="14" font-weight="500" fill="#71717A">系统</text>
+        <text x="92" y="14" fill="#16A34A">任务成功</text>
+        <text x="160" y="14" fill="#27272A">报告 2944 字 / 25 引用</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- 右栏 Report -->
+  <g transform="translate(868, 64)">
+    <rect width="516" height="772" rx="10" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <!-- tab header -->
+    <line x1="0" y1="40" x2="516" y2="40" stroke="#E4E4E7"/>
+    <rect x="12" y="10" width="56" height="22" rx="4" fill="#F4F4F5"/>
+    <text x="40" y="25" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B" letter-spacing="0.5">REPORT</text>
+    <text x="92" y="25" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="0.5">POSTS</text>
+
+    <!-- title row -->
+    <text x="20" y="72" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#09090B">竞品调研：国内 AI 笔记类产品</text>
+    <rect x="416" y="60" width="80" height="20" rx="4" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="456" y="74" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" fill="#09090B">Export .md</text>
+
+    <!-- Reviewer card -->
+    <rect x="20" y="92" width="476" height="120" rx="8" fill="#FAFAFA" stroke="#E4E4E7"/>
+    <text x="36" y="115" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="0.5">REVIEWER</text>
+    <text x="98" y="118" font-family="-apple-system, sans-serif" font-size="22" font-weight="600" fill="#16A34A">8.2</text>
+    <text x="138" y="118" font-family="SF Mono, monospace" font-size="10" fill="#71717A">/ 10</text>
+    <rect x="426" y="103" width="60" height="20" rx="3" fill="#16A34A" fill-opacity="0.1"/>
+    <text x="456" y="117" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="10" font-weight="600" fill="#16A34A" letter-spacing="0.5">ACCEPT</text>
+    <!-- 3 score bars -->
+    <g transform="translate(36, 138)" font-family="SF Mono, monospace" font-size="10">
+      <text x="0" y="10" fill="#71717A">Fact</text>
+      <text x="140" y="10" text-anchor="end" fill="#09090B">8.5</text>
+      <rect x="0" y="14" width="140" height="6" rx="3" fill="#F4F4F5"/>
+      <rect x="0" y="14" width="119" height="6" rx="3" fill="#16A34A"/>
+    </g>
+    <g transform="translate(186, 138)" font-family="SF Mono, monospace" font-size="10">
+      <text x="0" y="10" fill="#71717A">Coverage</text>
+      <text x="140" y="10" text-anchor="end" fill="#09090B">8.0</text>
+      <rect x="0" y="14" width="140" height="6" rx="3" fill="#F4F4F5"/>
+      <rect x="0" y="14" width="112" height="6" rx="3" fill="#16A34A"/>
+    </g>
+    <g transform="translate(336, 138)" font-family="SF Mono, monospace" font-size="10">
+      <text x="0" y="10" fill="#71717A">Citation</text>
+      <text x="140" y="10" text-anchor="end" fill="#09090B">8.0</text>
+      <rect x="0" y="14" width="140" height="6" rx="3" fill="#F4F4F5"/>
+      <rect x="0" y="14" width="112" height="6" rx="3" fill="#16A34A"/>
+    </g>
+    <text x="36" y="190" font-family="-apple-system, sans-serif" font-size="10" fill="#71717A">+ 覆盖核心竞品  + 引用真实可访问  − 缺少 Reflect 定价细节</text>
+
+    <!-- report body preview -->
+    <text x="20" y="240" font-family="-apple-system, sans-serif" font-size="20" font-weight="600" fill="#09090B"># 国内 AI 笔记类产品调研</text>
+    <text x="20" y="276" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#52525B" letter-spacing="0.5">## 1. 调研范围</text>
+    <text x="20" y="298" font-family="-apple-system, sans-serif" font-size="12" fill="#27272A">本次聚焦国内 AI 笔记产品，重点分析五款主流：</text>
+    <text x="20" y="316" font-family="-apple-system, sans-serif" font-size="12" fill="#27272A">Notion、飞书文档、思源笔记、FlowUs 息流、WPS AI</text>
+    <text x="20" y="350" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#52525B" letter-spacing="0.5">## 2. 竞品矩阵</text>
+    <!-- table mock -->
+    <g transform="translate(20, 366)">
+      <rect width="476" height="116" rx="6" fill="#FAFAFA" stroke="#E4E4E7"/>
+      <text x="14" y="20" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="#71717A" letter-spacing="0.5">产品</text>
+      <text x="120" y="20" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="#71717A" letter-spacing="0.5">定价</text>
+      <text x="240" y="20" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="#71717A" letter-spacing="0.5">AI 能力</text>
+      <text x="340" y="20" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="#71717A" letter-spacing="0.5">评价</text>
+      <line x1="0" y1="28" x2="476" y2="28" stroke="#E4E4E7"/>
+      <text x="14" y="46" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B">Notion</text>
+      <text x="120" y="46" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">$10/mo</text>
+      <text x="240" y="46" font-family="-apple-system, sans-serif" font-size="11" fill="#16A34A">✓ 内置</text>
+      <text x="340" y="46" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">block 灵活 [1]</text>
+      <line x1="14" y1="56" x2="462" y2="56" stroke="#E4E4E7"/>
+      <text x="14" y="74" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B">飞书</text>
+      <text x="120" y="74" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">按席位</text>
+      <text x="240" y="74" font-family="-apple-system, sans-serif" font-size="11" fill="#16A34A">✓ 强</text>
+      <text x="340" y="74" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">国内体验佳 [2]</text>
+      <line x1="14" y1="84" x2="462" y2="84" stroke="#E4E4E7"/>
+      <text x="14" y="102" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#09090B">思源</text>
+      <text x="120" y="102" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">¥148/年</text>
+      <text x="240" y="102" font-family="-apple-system, sans-serif" font-size="11" fill="#DC2626">✗ 无</text>
+      <text x="340" y="102" font-family="-apple-system, sans-serif" font-size="11" fill="#27272A">隐私优先 [3]</text>
+    </g>
+    <text x="20" y="510" font-family="-apple-system, sans-serif" font-size="13" font-weight="600" fill="#52525B" letter-spacing="0.5">## 3. 用户真实声量 · Reddit</text>
+    <g transform="translate(20, 530)" font-family="-apple-system, sans-serif" font-size="11">
+      <rect width="476" height="32" rx="4" fill="#FAFAFA" stroke="#E4E4E7"/>
+      <text x="12" y="14" fill="#27272A">"I deleted Notion, Anki, Quizlet — and my grades went up"</text>
+      <text x="12" y="26" fill="#71717A">u/Narrow_Detective9864 · r/studytips · [25]</text>
+    </g>
+    <g transform="translate(20, 570)" font-family="-apple-system, sans-serif" font-size="11">
+      <rect width="476" height="32" rx="4" fill="#FAFAFA" stroke="#E4E4E7"/>
+      <text x="12" y="14" fill="#27272A">"escaped Notion, found peace in Obsidian"</text>
+      <text x="12" y="26" fill="#71717A">u/RegularMario · r/ObsidianMD · [12]</text>
+    </g>
+
+    <!-- followup box -->
+    <line x1="20" y1="630" x2="496" y2="630" stroke="#E4E4E7"/>
+    <text x="20" y="654" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#71717A" letter-spacing="0.5">追问 / FOLLOW-UP</text>
+    <rect x="20" y="664" width="380" height="32" rx="6" fill="#FFFFFF" stroke="#E4E4E7"/>
+    <text x="32" y="684" font-family="-apple-system, sans-serif" font-size="12" fill="#A1A1AA">例如：再加一家国内竞品 Lark</text>
+    <rect x="408" y="664" width="88" height="32" rx="6" fill="#18181B"/>
+    <text x="452" y="684" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="500" fill="#FFFFFF">Ask</text>
+    <text x="20" y="712" font-family="SF Mono, monospace" font-size="9" fill="#71717A">⌘+Enter · 创建子任务，复用同 scenario</text>
+  </g>
+</svg>

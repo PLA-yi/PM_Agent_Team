@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- 圆角方形底 -->
+  <rect width="240" height="240" rx="48" fill="#18181B"/>
+
+  <!-- Hex grid 暗示「多 Agent 集群」-->
+  <g fill="none" stroke="#FF9500" stroke-width="2" opacity="0.25">
+    <polygon points="60,80 80,68 100,80 100,104 80,116 60,104"/>
+    <polygon points="100,80 120,68 140,80 140,104 120,116 100,104"/>
+    <polygon points="140,80 160,68 180,80 180,104 160,116 140,104"/>
+    <polygon points="80,116 100,104 120,116 120,140 100,152 80,140"/>
+    <polygon points="120,116 140,104 160,116 160,140 140,152 120,140"/>
+    <polygon points="100,152 120,140 140,152 140,176 120,188 100,176"/>
+  </g>
+
+  <!-- 中央 PM 字 -->
+  <text x="120" y="138" text-anchor="middle"
+        font-family="-apple-system, SF Pro Display, Helvetica Neue, sans-serif"
+        font-size="64" font-weight="700" fill="#FFFFFF" letter-spacing="-2">PM</text>
+
+  <!-- 底部点亮三个核心 hex -->
+  <g fill="#FF9500">
+    <polygon points="100,80 120,68 140,80 140,104 120,116 100,104" opacity="0.95"/>
+    <polygon points="80,116 100,104 120,116 120,140 100,152 80,140" opacity="0.7"/>
+    <polygon points="120,116 140,104 160,116 160,140 140,152 120,140" opacity="0.7"/>
+  </g>
+  <text x="120" y="138" text-anchor="middle"
+        font-family="-apple-system, SF Pro Display, Helvetica Neue, sans-serif"
+        font-size="64" font-weight="700" fill="#18181B" letter-spacing="-2">PM</text>
+</svg>
