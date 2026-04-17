@@ -224,7 +224,17 @@ func mockPRDMarkdown(input string) *Response {
 }
 
 func textResponse(s string) *Response {
-	return &Response{Message: Message{Role: RoleAssistant, Content: s}, Usage: Usage{TotalTokens: len(s) / 4}}
+	// 粗估：4 字符≈1 token；split 7:3 prompt:completion 给 mock 模式留点 token 数据
+	approxTotal := len(s) / 4
+	if approxTotal < 50 {
+		approxTotal = 50
+	}
+	completion := approxTotal / 2
+	prompt := approxTotal - completion
+	return &Response{
+		Message: Message{Role: RoleAssistant, Content: s},
+		Usage:   Usage{PromptTokens: prompt, CompletionTokens: completion, TotalTokens: approxTotal},
+	}
 }
 
 func jsonResponse(v interface{}) *Response {

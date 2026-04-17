@@ -30,6 +30,9 @@ type expandedSearcher interface {
 
 func (SocialListener) Name() string { return "social" }
 
+// IsOptional 让 Coordinator 知道社聆失败不阻塞主任务
+func (s SocialListener) IsOptional() bool { return s.Optional }
+
 func (s SocialListener) Run(ctx context.Context, st *State, d Deps) error {
 	mode := "standalone"
 	if !s.WriteToChunks {

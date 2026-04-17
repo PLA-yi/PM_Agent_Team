@@ -16,7 +16,9 @@ type Reviewer struct {
 	Iteration int // 第几轮 review（1 = 首版）
 }
 
-func (Reviewer) Name() string { return "reviewer" }
+func (Reviewer) Name() string         { return "reviewer" }
+// IsOptional Reviewer 失败不应阻塞产出（报告还在，只是没分数）
+func (Reviewer) IsOptional() bool     { return true }
 
 const reviewerSystem = `You are REVIEWER_AGENT —— a strict but fair reviewer for product research reports.
 
@@ -127,7 +129,8 @@ type ReviewerRetry struct {
 	MinScore float64 // 低于此分触发重写
 }
 
-func (ReviewerRetry) Name() string { return "coordinator" }
+func (ReviewerRetry) Name() string     { return "coordinator" }
+func (ReviewerRetry) IsOptional() bool { return true }
 
 func (rr ReviewerRetry) Run(ctx context.Context, st *State, d Deps) error {
 	if st.Review == nil {

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { Report, ReviewResult } from "../lib/api";
-import { followUp } from "../lib/api";
+import type { Report, ReviewResult, TaskUsage } from "../lib/api";
+import { followUp, getUsage } from "../lib/api";
 
 interface Props {
   report: Report | null;
@@ -44,6 +44,9 @@ export function ReportPreview({ report, loading, taskId, taskStatus, onFollowUp 
       </div>
 
       {review && <ReviewCard review={review} />}
+
+      {/* v0.6 LLM 用量摘要 */}
+      {taskId && <UsageStrip taskId={taskId} />}
 
       {/* 按 scenario 渲染结构化面板（在 markdown 前）*/}
       <ScenarioPanel report={report} />
@@ -238,6 +241,82 @@ function ValidationPanel({ hypotheses, validations, risks }: { hypotheses: any[]
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UsageStrip({ taskId }: { taskId: string }) {
+  const [usage, setUsage] = useState<TaskUsage | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    const load = () => {
+      getUsage(taskId).then((u) => { if (live) setUsage(u); }).catch(() => {});
+    };
+    load();
+    // 任务进行中时轮询一次（约 5s）
+    const id = window.setInterval(load, 5000);
+    return () => { live = false; window.clearInterval(id); };
+  }, [taskId]);
+
+  if (!usage) return null;
+
+  const cost = usage.cost_usd ?? 0;
+  const costStr = cost < 0.01 ? `$${cost.toFixed(4)}` : `$${cost.toFixed(2)}`;
+  const tokensStr = usage.total_tokens >= 1000
+    ? `${(usage.total_tokens / 1000).toFixed(1)}k`
+    : `${usage.total_tokens}`;
+  const exceeded = !!usage.budget_exceeded;
+  const agentRows = Object.entries(usage.by_agent ?? {})
+    .sort((a, b) => b[1].cost_usd - a[1].cost_usd);
+
+  return (
+    <div className={`mb-4 rounded-lg border ${exceeded ? "border-danger/40 bg-danger/5" : "border-border bg-bg2/40"}`}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center gap-3 px-3 py-2 text-xs hover:bg-bg2/60 transition rounded-lg"
+      >
+        <span className="text-[10px] text-muted2 uppercase tracking-wider font-semibold">LLM 用量</span>
+        <span className="mono font-semibold text-ink">{costStr}</span>
+        <span className="text-muted2 mono">·</span>
+        <span className="mono text-muted">{usage.calls} 次调用</span>
+        <span className="text-muted2 mono">·</span>
+        <span className="mono text-muted">{tokensStr} tokens</span>
+        {usage.budget_usd && usage.budget_usd > 0 && (
+          <>
+            <span className="text-muted2 mono">·</span>
+            <span className={`mono ${exceeded ? "text-danger font-semibold" : "text-muted2"}`}>
+              budget ${usage.budget_usd.toFixed(2)}{exceeded ? " ⚠" : ""}
+            </span>
+          </>
+        )}
+        <span className="ml-auto text-placeholder text-[14px] leading-none">{open ? "−" : "+"}</span>
+      </button>
+      {open && agentRows.length > 0 && (
+        <div className="px-3 pb-2 pt-1 border-t border-border">
+          <table className="w-full text-[11px] mono">
+            <thead className="text-muted2 uppercase tracking-wider">
+              <tr>
+                <th className="text-left py-1.5 font-semibold">Agent</th>
+                <th className="text-right py-1.5 font-semibold">Calls</th>
+                <th className="text-right py-1.5 font-semibold">Tokens</th>
+                <th className="text-right py-1.5 font-semibold">Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agentRows.map(([name, u]) => (
+                <tr key={name} className="border-t border-border">
+                  <td className="py-1 text-ink">{name}</td>
+                  <td className="py-1 text-right text-muted">{u.calls}</td>
+                  <td className="py-1 text-right text-muted tabular-nums">{u.total_tokens}</td>
+                  <td className="py-1 text-right text-ink tabular-nums">${u.cost_usd.toFixed(4)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

@@ -5,7 +5,21 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"pmhive/server/internal/llm"
 )
+
+// OptionalAgent 接口：声明 IsOptional() 的 agent 失败不阻塞 stage
+type OptionalAgent interface {
+	IsOptional() bool
+}
+
+func isOptional(a Agent) bool {
+	if oa, ok := a.(OptionalAgent); ok {
+		return oa.IsOptional()
+	}
+	return false
+}
 
 // Coordinator 是顶层编排器：决定 Agent 执行顺序与并行度，发布阶段事件。
 type Coordinator struct {
@@ -42,6 +56,9 @@ func DefaultCompetitorResearchPipeline() Coordinator {
 
 // Run 执行整个 pipeline
 func (c Coordinator) Run(ctx context.Context, st *State, d Deps) error {
+	// #8 注入 task_id 给 LLM client 用于 cost attribute
+	ctx = llm.WithTask(ctx, st.TaskID.String())
+
 	publish(d, st, "coordinator", "start", map[string]interface{}{
 		"input":  st.Input,
 		"stages": stageNames(c.Stages),
@@ -58,11 +75,21 @@ func (c Coordinator) Run(ctx context.Context, st *State, d Deps) error {
 		})
 
 		if len(stage.Agents) == 1 {
-			if err := stage.Agents[0].Run(ctx, st, d); err != nil {
-				publish(d, st, "coordinator", "error", map[string]string{
-					"stage": stage.Name, "agent": stage.Agents[0].Name(), "err": err.Error(),
-				})
-				return fmt.Errorf("stage %s agent %s: %w", stage.Name, stage.Agents[0].Name(), err)
+			a := stage.Agents[0]
+			actx := llm.WithAgent(ctx, a.Name())
+			if err := a.Run(actx, st, d); err != nil {
+				// #4 Optional agent 失败不阻塞 stage（已检查接口）
+				if isOptional(a) {
+					publish(d, st, "coordinator", "warn", map[string]string{
+						"stage": stage.Name, "agent": a.Name(),
+						"err": err.Error(), "note": "optional agent failed, continuing",
+					})
+				} else {
+					publish(d, st, "coordinator", "error", map[string]string{
+						"stage": stage.Name, "agent": a.Name(), "err": err.Error(),
+					})
+					return fmt.Errorf("stage %s agent %s: %w", stage.Name, a.Name(), err)
+				}
 			}
 		} else {
 			// 并行
@@ -72,17 +99,34 @@ func (c Coordinator) Run(ctx context.Context, st *State, d Deps) error {
 				wg.Add(1)
 				go func(i int, a Agent) {
 					defer wg.Done()
-					errs[i] = a.Run(ctx, st, d)
+					actx := llm.WithAgent(ctx, a.Name())
+					errs[i] = a.Run(actx, st, d)
 				}(idx, a)
 			}
 			wg.Wait()
+			// 统计：optional 失败仅 warn，required 失败立刻返回
+			var hardErr error
 			for i, e := range errs {
-				if e != nil {
-					publish(d, st, "coordinator", "error", map[string]string{
-						"stage": stage.Name, "agent": stage.Agents[i].Name(), "err": e.Error(),
-					})
-					return fmt.Errorf("stage %s agent %s: %w", stage.Name, stage.Agents[i].Name(), e)
+				if e == nil {
+					continue
 				}
+				a := stage.Agents[i]
+				if isOptional(a) {
+					publish(d, st, "coordinator", "warn", map[string]string{
+						"stage": stage.Name, "agent": a.Name(),
+						"err": e.Error(), "note": "optional agent failed, continuing",
+					})
+					continue
+				}
+				publish(d, st, "coordinator", "error", map[string]string{
+					"stage": stage.Name, "agent": a.Name(), "err": e.Error(),
+				})
+				if hardErr == nil {
+					hardErr = fmt.Errorf("stage %s agent %s: %w", stage.Name, a.Name(), e)
+				}
+			}
+			if hardErr != nil {
+				return hardErr
 			}
 		}
 		publish(d, st, "coordinator", "stage_done", map[string]string{"stage": stage.Name})

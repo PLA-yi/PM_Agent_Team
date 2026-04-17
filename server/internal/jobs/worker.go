@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"pmhive/server/internal/agent"
+	"pmhive/server/internal/llm"
 	"pmhive/server/internal/store"
 	"pmhive/server/internal/stream"
 )
@@ -20,6 +21,7 @@ type Worker struct {
 	Store store.Store
 	Bus   *stream.Bus
 	Deps  agent.Deps
+	Usage *llm.Recorder // #8 任务完成后把 usage 写到 report.metadata
 	queue chan uuid.UUID
 }
 
@@ -122,6 +124,7 @@ func (w *Worker) run(taskID uuid.UUID) {
 			"hypotheses":   st.Hypotheses,
 			"validations":  st.Validations,
 			"risks":        st.Risks,
+			"usage":        w.usageSnapshot(taskID),
 		},
 	}
 	if err := w.Store.SaveReport(ctx, rep); err != nil {
@@ -289,6 +292,20 @@ func extractStage(payload []byte) string {
 func (w *Worker) persistTraces(ctx context.Context, taskID uuid.UUID) error {
 	hist := w.Bus.History(taskID)
 	return w.Store.SaveTraces(ctx, taskID, hist)
+}
+
+// usageSnapshot 拿到任务的 LLM 用量摘要（不挂详细 records，避免 metadata 爆）
+func (w *Worker) usageSnapshot(taskID uuid.UUID) any {
+	if w.Usage == nil {
+		return nil
+	}
+	u := w.Usage.Get(taskID.String())
+	if u == nil {
+		return nil
+	}
+	// drop records (太长)，保留汇总
+	u.Records = nil
+	return u
 }
 
 func splitKeywords(s string) []string {

@@ -8,6 +8,7 @@ import (
 	"pmhive/server/internal/integrations/jira"
 	"pmhive/server/internal/integrations/slack"
 	"pmhive/server/internal/jobs"
+	"pmhive/server/internal/llm"
 	"pmhive/server/internal/store"
 	"pmhive/server/internal/stream"
 )
@@ -18,6 +19,7 @@ type Server struct {
 	Worker      *jobs.Worker
 	Slack       *slack.Client
 	Jira        *jira.Client
+	Usage       *llm.Recorder // #8 token/cost 追踪
 	CORSAllowed []string
 }
 
@@ -53,6 +55,7 @@ func (s *Server) Routes() http.Handler {
 	// v0.5: agent role registry
 	mux.HandleFunc("GET /api/agents/roles", s.handleGetRoles)
 	mux.HandleFunc("GET /api/agents/roles/{scenario}", s.handleGetRolesByScenario)
+	mux.HandleFunc("GET /api/tasks/{id}/usage", s.handleGetUsage)
 
 	return s.withCORS(mux)
 }

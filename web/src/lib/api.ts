@@ -181,6 +181,38 @@ export async function listRolesByScenario(scenario: string): Promise<RoleMeta[]>
   return (await r.json()).roles ?? [];
 }
 
+// v0.6: token / cost usage
+export interface AgentUsage {
+  calls: number;
+  total_tokens: number;
+  cost_usd: number;
+}
+export interface ModelUsage {
+  calls: number;
+  total_tokens: number;
+  cost_usd: number;
+}
+export interface TaskUsage {
+  task_id: string;
+  calls: number;
+  prompt_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  elapsed_ms: number;
+  by_agent: Record<string, AgentUsage>;
+  by_model: Record<string, ModelUsage>;
+  budget_usd?: number;
+  budget_exceeded?: boolean;
+}
+export async function getUsage(taskId: string): Promise<TaskUsage | null> {
+  const r = await fetch(`/api/tasks/${taskId}/usage`);
+  if (!r.ok) return null;
+  const data = await r.json();
+  if (data.calls === 0) return null;
+  return data;
+}
+
 export async function getIntegrationStatus(): Promise<IntegrationStatus> {
   const r = await fetch("/api/integrations/status");
   if (!r.ok) throw new Error("integrationStatus: " + r.status);

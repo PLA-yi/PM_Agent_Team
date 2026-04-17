@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -38,7 +39,7 @@ func main() {
 	mockMode := envOr("MOCK_MODE", "auto")
 	corsRaw := envOr("CORS_ORIGINS", "http://localhost:5173")
 
-	llmClient := llm.New(llm.Config{
+	rawLLM := llm.New(llm.Config{
 		Provider:      provider,
 		OpenRouterKey: openRouterKey,
 		AnthropicKey:  anthropicKey,
@@ -47,6 +48,21 @@ func main() {
 		Model:         llmModel,
 		MockMode:      mockMode,
 	})
+	// 默认每任务 budget = $1（USD），可通过 ENV 调整；超出抛 ErrBudgetExceeded
+	defaultBudget := 1.0
+	if v := os.Getenv("TASK_BUDGET_USD"); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil && f > 0 {
+			defaultBudget = f
+		}
+	}
+	usageRec := llm.NewRecorder(defaultBudget)
+	providerName := "auto"
+	if provider != "" {
+		providerName = provider
+	}
+	// 包装链：raw → Retry (transient backoff) → Metered (token/cost 记录)
+	retryClient := llm.NewRetry(rawLLM, 3, 500*time.Millisecond)
+	llmClient := llm.NewMetered(retryClient, usageRec, providerName)
 	searcher := tools.NewSearcher(tools.SearchConfig{
 		Provider:  searchProvider,
 		TavilyKey: tavilyKey,
@@ -78,6 +94,7 @@ func main() {
 		Model:  llmModel,
 	}
 	worker := jobs.NewWorker(mem, bus, deps, 4)
+	worker.Usage = usageRec
 
 	slackCli := slack.New(os.Getenv("SLACK_WEBHOOK_URL"))
 	jiraCli := jira.New(os.Getenv("JIRA_BASE_URL"), os.Getenv("JIRA_EMAIL"), os.Getenv("JIRA_API_TOKEN"))
@@ -88,6 +105,7 @@ func main() {
 		Worker:      worker,
 		Slack:       slackCli,
 		Jira:        jiraCli,
+		Usage:       usageRec,
 		CORSAllowed: splitCSV(corsRaw),
 	}
 
