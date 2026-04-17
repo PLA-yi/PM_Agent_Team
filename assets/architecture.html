@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>PM Agent Team — 系统架构</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #FAFAFA; --panel: #FFFFFF; --bg2: #F4F4F5;
+    --border: #E4E4E7; --borderHi: #D4D4D8;
+    --ink: #09090B; --ink2: #27272A; --muted: #52525B; --muted2: #71717A; --placeholder: #A1A1AA;
+    --accent: #18181B;
+    --orange: #FF9500; --blue: #3B82F6; --green: #16A34A; --purple: #A855F7; --red: #DC2626; --amber: #CA8A04;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+    letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  header.top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+  header.top h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  header.top .badge { font-family: "SF Mono", Menlo, monospace; font-size: 11px; padding: 2px 8px;
+    background: var(--bg2); color: var(--muted); border-radius: 4px; font-weight: 600; }
+  header.top .sub { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; padding: 12px 16px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* layer card */
+  .layer { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 20px; position: relative; }
+  .layer-title { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .layer-title .num { font-family: "SF Mono", Menlo, monospace; font-size: 11px;
+    color: var(--placeholder); font-weight: 600; letter-spacing: 0.05em; }
+  .layer-title h2 { margin: 0; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink); }
+  .layer-title .desc { font-size: 12px; color: var(--muted2); margin-left: 8px; }
+
+  /* nodes grid */
+  .row { display: grid; gap: 12px; }
+  .row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .row.cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+  .node { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; transition: all 0.15s; cursor: default; }
+  .node:hover { border-color: var(--borderHi); box-shadow: 0 4px 12px rgba(0,0,0,0.04); transform: translateY(-1px); }
+  .node .label { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .node .meta { font-size: 11px; color: var(--muted2); font-family: "SF Mono", Menlo, monospace; }
+  .node .desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .node[data-status="active"] { background: linear-gradient(0deg, rgba(255,149,0,0.04), white); }
+
+  .node.accent-blue { border-left: 3px solid var(--blue); }
+  .node.accent-orange { border-left: 3px solid var(--orange); }
+  .node.accent-green { border-left: 3px solid var(--green); }
+  .node.accent-purple { border-left: 3px solid var(--purple); }
+  .node.accent-amber { border-left: 3px solid var(--amber); }
+
+  /* module card (3 PM 板块大卡) */
+  .modules { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .module-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; position: relative; overflow: hidden; }
+  .module-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: var(--orange); }
+  .module-card.m-req::before { background: var(--blue); }
+  .module-card.m-comp::before { background: var(--orange); }
+  .module-card.m-val::before { background: var(--green); }
+  .module-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .module-head .name { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .module-head .route { margin-left: auto; font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px; color: var(--muted2); background: var(--bg2); padding: 2px 6px; border-radius: 3px; }
+  .module-head .stage-count { font-size: 11px; color: var(--muted2); font-family: "SF Mono", Menlo, monospace; }
+  .module-card .desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+
+  /* pipeline horizontal */
+  .pipeline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .stage { background: var(--bg2); padding: 6px 10px; border-radius: 6px; font-size: 11px;
+    color: var(--ink2); font-weight: 500; white-space: nowrap; }
+  .stage.parallel { border: 1px dashed var(--borderHi); background: white; }
+  .arrow { color: var(--placeholder); font-size: 12px; }
+  .stage.review { background: rgba(202,138,4,0.1); color: var(--amber); font-weight: 600; }
+  .loop { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--amber);
+    background: rgba(202,138,4,0.08); padding: 3px 8px; border-radius: 999px; margin-left: 8px; }
+
+  /* connection line between layers */
+  .connector { display: flex; justify-content: center; padding: 4px 0; }
+  .connector .down { width: 1px; height: 20px; background: var(--borderHi); }
+
+  /* role chips */
+  .roles-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .role-chip { display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; background: var(--bg2); border-radius: 999px;
+    font-size: 11px; color: var(--ink2); }
+  .role-chip .role-em { font-size: 12px; }
+
+  /* footer bar (cross-cutting) */
+  .crosscut { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .crosscut .layer { margin-bottom: 0; }
+
+  .footer-meta { display: flex; gap: 16px; font-size: 11px; color: var(--muted2);
+    font-family: "SF Mono", Menlo, monospace; padding: 16px 0; border-top: 1px solid var(--border);
+    margin-top: 20px; }
+
+  /* data sources subtle differentiation */
+  .ds-tag { font-family: "SF Mono", Menlo, monospace; font-size: 10px; color: var(--muted2);
+    text-transform: uppercase; letter-spacing: 0.04em; }
+  .ds-tag.active { color: var(--green); }
+  .ds-tag.stub { color: var(--placeholder); }
+
+  /* svg arrow flow visual between modules */
+  .flow-strip { display: flex; align-items: center; justify-content: center; gap: 24px;
+    padding: 18px; background: linear-gradient(90deg, rgba(59,130,246,0.04), rgba(255,149,0,0.04), rgba(22,163,74,0.04));
+    border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; }
+  .flow-stage { display: flex; align-items: center; gap: 10px; }
+  .flow-stage .num { font-family: "SF Mono", monospace; font-size: 12px; color: var(--muted2); font-weight: 600; }
+  .flow-stage .nm { font-size: 14px; font-weight: 700; }
+  .flow-arrow { font-size: 18px; color: var(--placeholder); }
+
+  @media (max-width: 980px) {
+    .modules, .crosscut { grid-template-columns: 1fr; }
+    .row.cols-4, .row.cols-5, .row.cols-6 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- title -->
+  <header class="top">
+    <h1>PM Agent Team — 系统架构</h1>
+    <span class="badge">v0.5</span>
+    <span class="sub">前后端分离 · 多 Agent 集群 · 工作流串联</span>
+  </header>
+
+  <!-- legend -->
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--blue)"></span>需求分析</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--orange)"></span>竞品调研</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span>需求验证</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span>复审 / 自校正</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--purple)"></span>跨板块共享</span>
+    <span class="legend-item" style="margin-left:auto"><span style="color:var(--green)">●</span>已就绪</span>
+    <span class="legend-item"><span style="color:var(--placeholder)">○</span>需配 key</span>
+  </div>
+
+  <!-- ============ LAYER 1: 用户 / 浏览器 ============ -->
+  <div class="layer">
+    <div class="layer-title">
+      <span class="num">L1</span><h2>Frontend · 用户层</h2>
+      <span class="desc">React 18 + Vite + TypeScript strict + Tailwind · react-router-dom 6</span>
+    </div>
+    <div class="row cols-4">
+      <div class="node accent-purple">
+        <div class="label">/ Dashboard</div>
+        <div class="meta">SSR-less SPA</div>
+        <div class="desc">三大板块概览 · 工作流串联示意 · Projects · 最近任务</div>
+      </div>
+      <div class="node accent-blue">
+        <div class="label">/requirement</div>
+        <div class="meta">ModulePage</div>
+        <div class="desc">需求分析专属页面 · 4 stages</div>
+      </div>
+      <div class="node accent-orange">
+        <div class="label">/competitor</div>
+        <div class="meta">ModulePage</div>
+        <div class="desc">竞品调研专属页面 · 7 stages (含 Reviewer + 自校正)</div>
+      </div>
+      <div class="node accent-green">
+        <div class="label">/validation</div>
+        <div class="meta">ModulePage</div>
+        <div class="desc">需求验证专属页面 · 5 stages</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="down"></div></div>
+
+  <!-- ============ LAYER 2: 工作流串联 ============ -->
+  <div class="flow-strip">
+    <div class="flow-stage">
+      <span class="num">阶段 1</span>
+      <span class="nm" style="color:var(--blue)">📋 需求分析</span>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-stage">
+      <span class="num">阶段 2</span>
+      <span class="nm" style="color:var(--orange)">🔍 竞品调研</span>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-stage">
+      <span class="num">阶段 3</span>
+      <span class="nm" style="color:var(--green)">✅ 需求验证</span>
+    </div>
+    <span style="margin-left:24px; font-size:11px; color:var(--muted2); font-family:'SF Mono',monospace">
+      sessionStorage 串上下文 · Project KB 跨任务记忆
+    </span>
+  </div>
+
+  <!-- ============ LAYER 3: API + SSE ============ -->
+  <div class="layer">
+    <div class="layer-title">
+      <span class="num">L2</span><h2>Backend API · Go net/http + SSE</h2>
+      <span class="desc">无中间件 · 标准库直出 · vite proxy /api → :8080</span>
+    </div>
+    <div class="row cols-5">
+      <div class="node">
+        <div class="label">POST /api/tasks</div>
+        <div class="meta">create + enqueue</div>
+      </div>
+      <div class="node">
+        <div class="label">GET .../stream</div>
+        <div class="meta">SSE 实时推送</div>
+      </div>
+      <div class="node">
+        <div class="label">GET .../report</div>
+        <div class="meta">报告 + metadata</div>
+      </div>
+      <div class="node">
+        <div class="label">GET .../posts</div>
+        <div class="meta">1000+ 帖分页筛选</div>
+      </div>
+      <div class="node">
+        <div class="label">POST .../followup</div>
+        <div class="meta">追问 child task</div>
+      </div>
+      <div class="node">
+        <div class="label">/api/projects</div>
+        <div class="meta">项目空间 CRUD</div>
+      </div>
+      <div class="node">
+        <div class="label">/api/agents/roles</div>
+        <div class="meta">角色注册表</div>
+      </div>
+      <div class="node">
+        <div class="label">/api/integrations/*</div>
+        <div class="meta">slack notify · jira issue</div>
+      </div>
+      <div class="node">
+        <div class="label">/api/webhooks/jira</div>
+        <div class="meta">issue.created → spawn PRD task</div>
+      </div>
+      <div class="node">
+        <div class="label">GET /healthz</div>
+        <div class="meta">live check</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="down"></div></div>
+
+  <!-- ============ LAYER 4: Worker + Pipeline ============ -->
+  <div class="layer">
+    <div class="layer-title">
+      <span class="num">L3</span><h2>Worker Pool + Pipeline Orchestrator</h2>
+      <span class="desc">内存 worker pool (River-ready) · Coordinator 编排 stage · stream.Bus SSE 事件总线</span>
+    </div>
+    <div class="row cols-3">
+      <div class="node">
+        <div class="label">Worker Pool</div>
+        <div class="meta">concurrency=4</div>
+        <div class="desc">异步任务执行；child task 完成自动 merge 到 parent；KB 注入 PriorContext</div>
+      </div>
+      <div class="node">
+        <div class="label">Coordinator</div>
+        <div class="meta">stage runner</div>
+        <div class="desc">按 Pipeline DAG 执行 stage；同 stage 多 agent 并行；触发 Reviewer self-correction</div>
+      </div>
+      <div class="node">
+        <div class="label">stream.Bus</div>
+        <div class="meta">事件总线</div>
+        <div class="desc">Pub/Sub agent trace 事件；HTTP SSE 订阅推前端</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LAYER 5: 三大 PM 板块 + Pipeline ============ -->
+
+  <!-- 需求分析 -->
+  <div class="module-card m-req">
+    <div class="module-head">
+      <span class="name" style="color:var(--blue)">📋 需求分析</span>
+      <span class="stage-count">4 stages</span>
+      <span class="route">requirement_analysis</span>
+    </div>
+    <div class="desc">从产品/市场上下文挖掘潜在需求 · RICE+Kano 自动评分 · P0/P1/P2 排序</div>
+    <div class="pipeline">
+      <span class="stage">discovering · 用户研究员</span>
+      <span class="arrow">→</span>
+      <span class="stage parallel">user_voice · 社聆员 (Reddit + HN)</span>
+      <span class="arrow">→</span>
+      <span class="stage">scoring · 数据分析师 (RICE+Kano)</span>
+      <span class="arrow">→</span>
+      <span class="stage">writing · AI PM 撰写员</span>
+      <span class="arrow">→</span>
+      <span class="stage review">reviewing · 复审员</span>
+    </div>
+    <div class="roles-strip">
+      <span class="role-chip"><span class="role-em">🗺️</span>用户研究员</span>
+      <span class="role-chip"><span class="role-em">📡</span>社聆员</span>
+      <span class="role-chip"><span class="role-em">📊</span>数据分析师</span>
+      <span class="role-chip"><span class="role-em">✍️</span>AI 产品经理</span>
+      <span class="role-chip"><span class="role-em">🧐</span>复审员</span>
+    </div>
+  </div>
+
+  <!-- 竞品调研 -->
+  <div class="module-card m-comp">
+    <div class="module-head">
+      <span class="name" style="color:var(--orange)">🔍 竞品调研</span>
+      <span class="stage-count">7 stages · 含 Self-correction loop</span>
+      <span class="route">competitor_research</span>
+    </div>
+    <div class="desc">规划竞品 → 三路并行抓取 → 结构化矩阵 → SWOT → 撰写 → 评分 ≥7 否则自动重写</div>
+    <div class="pipeline">
+      <span class="stage">planning · 市场情报员</span>
+      <span class="arrow">→</span>
+      <span class="stage parallel">researching · Search + Scraper + Social 并行</span>
+      <span class="arrow">→</span>
+      <span class="stage">extracting · 投行商业分析师</span>
+      <span class="arrow">→</span>
+      <span class="stage">analyzing · 行业分析师 (SWOT)</span>
+      <span class="arrow">→</span>
+      <span class="stage">writing · 撰写员</span>
+      <span class="arrow">→</span>
+      <span class="stage review">reviewing · 复审员</span>
+      <span class="loop">↻ 评分 &lt; 7 自动重写</span>
+    </div>
+    <div class="roles-strip">
+      <span class="role-chip"><span class="role-em">🔭</span>市场情报员</span>
+      <span class="role-chip"><span class="role-em">🔍</span>行业研究员</span>
+      <span class="role-chip"><span class="role-em">📡</span>社聆员</span>
+      <span class="role-chip"><span class="role-em">💼</span>投行商业分析师</span>
+      <span class="role-chip"><span class="role-em">📊</span>行业分析师</span>
+      <span class="role-chip"><span class="role-em">✍️</span>撰写员</span>
+      <span class="role-chip"><span class="role-em">🧐</span>复审员</span>
+    </div>
+  </div>
+
+  <!-- 需求验证 -->
+  <div class="module-card m-val">
+    <div class="module-head">
+      <span class="name" style="color:var(--green)">✅ 需求验证</span>
+      <span class="stage-count">5 stages</span>
+      <span class="route">requirement_validation</span>
+    </div>
+    <div class="desc">假设拆解 (Problem/Solution/Value) · 多方法验证 · 蓝军视角找盲点</div>
+    <div class="pipeline">
+      <span class="stage">hypothesizing · 精益创业教练</span>
+      <span class="arrow">→</span>
+      <span class="stage parallel">user_voice · 社聆员</span>
+      <span class="arrow">→</span>
+      <span class="stage">validating · 验证执行人 (蓝军)</span>
+      <span class="arrow">→</span>
+      <span class="stage">writing · 风险撰写员</span>
+      <span class="arrow">→</span>
+      <span class="stage review">reviewing · 复审员</span>
+    </div>
+    <div class="roles-strip">
+      <span class="role-chip"><span class="role-em">🗺️</span>精益创业教练</span>
+      <span class="role-chip"><span class="role-em">📡</span>社聆员</span>
+      <span class="role-chip"><span class="role-em">💼</span>验证执行人</span>
+      <span class="role-chip"><span class="role-em">✍️</span>风险撰写员</span>
+      <span class="role-chip"><span class="role-em">🧐</span>复审员</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="down"></div></div>
+
+  <!-- ============ LAYER 6: Storage ============ -->
+  <div class="layer">
+    <div class="layer-title">
+      <span class="num">L4</span><h2>Storage · Memory Store (PG-ready)</h2>
+      <span class="desc">interface 已抽象 · Postgres + pgvector 升级路径在 docs/data-pipeline.md</span>
+    </div>
+    <div class="row cols-5">
+      <div class="node"><div class="label">Tasks</div><div class="meta">+ parent + project</div></div>
+      <div class="node"><div class="label">Reports</div><div class="meta">md + metadata</div></div>
+      <div class="node"><div class="label">Traces</div><div class="meta">SSE 事件历史</div></div>
+      <div class="node"><div class="label">Posts</div><div class="meta">1000+ 帖/任务</div></div>
+      <div class="node"><div class="label">Projects</div><div class="meta">空间 + KB</div></div>
+      <div class="node"><div class="label">Knowledge</div><div class="meta">跨任务召回</div></div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="down"></div></div>
+
+  <!-- ============ LAYER 7: 外部服务 ============ -->
+  <div class="layer">
+    <div class="layer-title">
+      <span class="num">L5</span><h2>External Services · 数据源 + LLM + 集成</h2>
+      <span class="desc">所有 provider 可插拔 · auto fallback · 缺 key 自动 mock</span>
+    </div>
+
+    <h3 style="font-size:11px; font-weight:700; color:var(--muted2); margin:8px 0; text-transform:uppercase; letter-spacing:0.06em">LLM Provider 多路由</h3>
+    <div class="row cols-4">
+      <div class="node"><div class="label">直连 provider</div><div class="ds-tag active">● ENV: ANTHROPIC_API_KEY</div></div>
+      <div class="node"><div class="label">代理网关</div><div class="ds-tag active">● ENV: AIHUBMIX_API_KEY</div></div>
+      <div class="node"><div class="label">多模型路由</div><div class="ds-tag active">● ENV: OPENROUTER_API_KEY</div></div>
+      <div class="node"><div class="label">Mock fallback</div><div class="ds-tag">无 key 时自动启用</div></div>
+    </div>
+
+    <h3 style="font-size:11px; font-weight:700; color:var(--muted2); margin:14px 0 8px; text-transform:uppercase; letter-spacing:0.06em">搜索 + 抓取</h3>
+    <div class="row cols-4">
+      <div class="node"><div class="label">DuckDuckGo</div><div class="ds-tag active">● 免费 · UA 轮换 · 退避</div></div>
+      <div class="node"><div class="label">Tavily</div><div class="ds-tag stub">○ 配 TAVILY_API_KEY 切换</div></div>
+      <div class="node"><div class="label">Jina Search</div><div class="ds-tag stub">○ 配 JINA_API_KEY 切换</div></div>
+      <div class="node"><div class="label">Jina Reader</div><div class="ds-tag active">● r.jina.ai (markdown)</div></div>
+    </div>
+
+    <h3 style="font-size:11px; font-weight:700; color:var(--muted2); margin:14px 0 8px; text-transform:uppercase; letter-spacing:0.06em">社交聆听 · 海外为主</h3>
+    <div class="row cols-5">
+      <div class="node"><div class="label">Reddit</div><div class="ds-tag active">● Atom RSS · 多 sort 扩展</div></div>
+      <div class="node"><div class="label">Hacker News</div><div class="ds-tag active">● Algolia · 海外创业</div></div>
+      <div class="node"><div class="label">X (Twitter)</div><div class="ds-tag stub">○ X_BEARER_TOKEN</div></div>
+      <div class="node"><div class="label">Douyin</div><div class="ds-tag stub">○ DOUYIN_COOKIE</div></div>
+      <div class="node"><div class="label">TikTok</div><div class="ds-tag stub">○ TIKTOK_SESSIONID</div></div>
+      <div class="node"><div class="label">YouTube</div><div class="ds-tag stub">○ YOUTUBE_API_KEY</div></div>
+    </div>
+
+    <h3 style="font-size:11px; font-weight:700; color:var(--muted2); margin:14px 0 8px; text-transform:uppercase; letter-spacing:0.06em">工具链集成</h3>
+    <div class="row cols-3">
+      <div class="node"><div class="label">Slack</div><div class="ds-tag stub">○ SLACK_WEBHOOK_URL · 推卡片</div></div>
+      <div class="node"><div class="label">Jira</div><div class="ds-tag stub">○ JIRA_BASE_URL/EMAIL/TOKEN · 建 issue</div></div>
+      <div class="node"><div class="label">Web Crawler (Tier2)</div><div class="ds-tag active">● BFS + robots.txt + 限速</div></div>
+    </div>
+  </div>
+
+  <!-- ============ 横切关注点 ============ -->
+  <div class="crosscut" style="margin-top:24px">
+    <div class="layer">
+      <div class="layer-title">
+        <span class="num">×</span><h2>横切：Reviewer Self-correction Loop</h2>
+      </div>
+      <div class="pipeline">
+        <span class="stage">Writer 出报告</span>
+        <span class="arrow">→</span>
+        <span class="stage review">Reviewer 三维评分 (Fact + Coverage + Citation)</span>
+        <span class="arrow">→</span>
+        <span class="stage">verdict ≥ 7 ✓ 通过</span>
+        <span class="loop">↻ &lt; 7 → Writer 拿 critique 重写一次</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-title">
+        <span class="num">×</span><h2>横切：Project Space + Cross-task KB</h2>
+      </div>
+      <div class="pipeline">
+        <span class="stage">Task 完成</span>
+        <span class="arrow">→</span>
+        <span class="stage">harvestKnowledge: 抽实体/quote 入 KB</span>
+        <span class="arrow">→</span>
+        <span class="stage">新任务启动</span>
+        <span class="arrow">→</span>
+        <span class="stage">QueryKnowledge 召回 PriorContext 注入 Planner</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer-meta">
+    <span>Repo: github.com/PLA-yi/PM_Agent_Team</span>
+    <span style="margin-left:auto">v0.5 · 11 角色 · 6 scenarios · 73+ files · race-clean · TS strict</span>
+  </div>
+
+</div>
+
+</body>
+</html>
