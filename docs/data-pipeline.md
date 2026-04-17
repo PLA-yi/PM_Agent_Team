@@ -232,9 +232,9 @@ func (w *EmbedWorker) Work(ctx context.Context, job *river.Job[EmbedArgs]) error
 ```
 
 **Embedding provider**：
-- Anthropic 没有官方 embedding API
-- AIhubmix 代理 OpenAI text-embedding-3-small（1536d, $0.02/1M tokens）—— 默认
-- 国内合规：通义千问 text-embedding-v3 也是 1536d
+- 选 1536 维兼容模型（业界主流尺寸）
+- 通过 LLM 抽象层切换 provider，无需改业务代码
+- 国内合规可选其他 1536 维国产模型
 
 ---
 
@@ -350,4 +350,4 @@ Extractor / Writer 的 system prompt 加：
 ---
 
 > **结论**：数据管道是 PMHive 从"agent demo"晋级到"行业基础设施"的关键一跳。
-> 不做 → 永远是 ChatGPT 套壳；做了 → 12 个月内的护城河。
+> 不做 → 永远是通用 LLM 套壳；做了 → 12 个月内的护城河。

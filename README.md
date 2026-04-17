@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/version-0.4-FF9500.svg" alt="version 0.4" />
     <img src="https://img.shields.io/badge/backend-Go%201.22%2B-00ADD8.svg" alt="Go 1.22+" />
     <img src="https://img.shields.io/badge/frontend-React%2018%20%2B%20Vite-61DAFB.svg" alt="React 18" />
-    <img src="https://img.shields.io/badge/llm-Claude%20Sonnet%204.5-D97706.svg" alt="Claude" />
+    <img src="https://img.shields.io/badge/llm-multi--provider-D97706.svg" alt="LLM" />
     <img src="https://img.shields.io/badge/agents-10%2B-A855F7.svg" alt="10+ agents" />
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT" />
   </p>
@@ -32,7 +32,7 @@
 | 📝 **PRD 起草** — 背景 / 目标 / 用户故事 / 验收标准 | 单份 0.5-1 天 | 一句话需求 → 结构化 PRD 草稿，含 4-6 user stories + 验收标准 |
 | 📡 **社区聆听** — 跟踪用户在 Reddit / 抖音 / X 上的真实声量 | 几乎不做 | 跨平台批量抓帖 (1000+/任务) + 相关性过滤 |
 
-**为什么是「Agent 集群」而不是「Claude 套壳」**：
+**为什么是「Agent 集群」而不是「LLM 套壳」**：
 
 - ⚙️ **多 Agent 真协作**：调度员 → 规划员 → 搜索员 + 抓取员 + 社聆员 (并行) → 结构化员 → 分析员 → 撰写员 → **复审员** (打分) → **自校正重写** (分数 < 7 自动 retry)
 - 🧠 **跨任务长期记忆**：项目空间 (Project) 把多个相关 task 归到一起，新任务自动召回历史调研作为上下文
@@ -86,9 +86,9 @@ flowchart TB
     end
 
     subgraph LLM层
-        Anthro[Anthropic Claude]
-        AIHub[AIhubmix 代理]
-        OR[OpenRouter]
+        Direct[直连 provider]
+        Proxy[代理网关]
+        Multi[多模型路由]
         Mock[Mock fallback]
     end
 
@@ -109,9 +109,9 @@ flowchart TB
     API --> Worker
     Worker --> Pipeline
     Pipeline --> Store
-    Pipeline --> Anthro
-    Pipeline --> AIHub
-    Pipeline --> OR
+    Pipeline --> Direct
+    Pipeline --> Proxy
+    Pipeline --> Multi
     Pipeline --> Mock
     Pipeline --> DDG
     Pipeline --> Jina
@@ -127,7 +127,7 @@ flowchart TB
 | 层 | 选型 | 理由 |
 |---|---|---|
 | **后端语言** | Go 1.22+ 标准库 net/http | 多 Agent 并发原生优势；零额外中间件 |
-| **LLM 路由** | Anthropic / AIhubmix / OpenRouter (auto-fallback) | 海外+国内+多模型切换；mock 兜底零外部依赖跑 demo |
+| **LLM 路由** | 多 provider 抽象层（直连 / 代理 / 多模型路由 / mock 兜底） | provider 可插拔；切换走 ENV，零代码改动；无 key 自动 mock 跑 demo |
 | **任务队列** | Memory worker pool (River-ready) | 零依赖开箱跑；接口预留可切 PostgreSQL + River |
 | **数据存储** | Memory store (PG-ready) | KB / Posts / Tasks 三层存储；接口为 PG 升级预留 |
 | **搜索** | DuckDuckGo HTML / Tavily / Jina (with relevance filter) | 免费默认 + 可选付费升级；query 自动双语扩展 |
@@ -153,10 +153,7 @@ cd PM_Agent_Team
 
 ```bash
 cp .env.example .env
-# 推荐填：AIHUBMIX_API_KEY=sk-...   (国内代理 Claude，最快)
-#       或 ANTHROPIC_API_KEY=sk-ant-... (直连)
-#       或 OPENROUTER_API_KEY=...       (海外多模型)
-# 不填任何 key → 走 mock 模式，仍可演示完整 UI 链路
+# 任选一个 LLM provider key 填入；不填则自动走 mock 模式仍可演示完整 UI 链路
 ```
 
 ### 2. 启动后端 (`:8080`)
@@ -169,7 +166,7 @@ cd server && go run ./cmd/server
 看到这行就 OK：
 ```
 PMHive listening on :8080
-  LLM:    mock=false   model=claude-sonnet-4-5
+  LLM:    mock=false   model=&lt;configured&gt;
   Search: mock=false   provider=duckduckgo→mock(fallback)
   Scrape: mock=false   provider=jina_reader
   Social: authed=[reddit]
@@ -216,7 +213,7 @@ PM_Agent_Team/
 │   ├── internal/
 │   │   ├── api/         # HTTP + SSE handler
 │   │   ├── agent/       # 10+ Agent (planner/search/scraper/social/extractor/analyzer/writer/reviewer/...)
-│   │   ├── llm/         # Anthropic / AIhubmix / OpenRouter / Mock
+│   │   ├── llm/         # 多 provider 抽象（直连 / 代理 / 多路由 / Mock）
 │   │   ├── tools/       # DDG / Tavily / Jina / Mock
 │   │   │   └── social/  # Reddit (RSS) + X / Douyin / TikTok / YouTube stubs
 │   │   ├── crawler/     # Tier2 BFS web crawler (robots.txt + rate limit)
@@ -245,7 +242,7 @@ PM_Agent_Team/
 
 - [x] **v0.1** — MVP 端到端：竞品调研单场景 demo，mock 模式开箱即跑
 - [x] **v0.2** — 访谈分析 + PRD 起草，4 场景闭环
-- [x] **v0.3** — 真实 LLM (Anthropic / AIhubmix / OpenRouter) 全打通
+- [x] **v0.3** — 真实 LLM 多 provider 全打通（可插拔 + auto-fallback）
 - [x] **v0.4** ⭐ — 当前版本
   - Reviewer Agent + Self-correction loop（评分 < 7 自动重写一轮）
   - Project 项目空间 + 跨任务知识库（KB 注入新任务上下文）
@@ -306,11 +303,9 @@ cd web && npx vite build                   # 生产构建
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `LLM_PROVIDER` | auto | `anthropic` / `aihubmix` / `openrouter` / 留空 auto |
-| `AIHUBMIX_API_KEY` | — | AIhubmix 代理 key（推荐：国内可用） |
-| `ANTHROPIC_API_KEY` | — | 直连 Anthropic key |
-| `OPENROUTER_API_KEY` | — | OpenRouter key |
-| `LLM_MODEL` | `claude-sonnet-4-5` | LLM model id |
+| `LLM_PROVIDER` | auto | provider 标识；留空走 auto 路由 |
+| `LLM_API_KEY_*` | — | 各 provider 的 API key（任选一个即可） |
+| `LLM_MODEL` | （由 provider 决定）| 模型 id |
 | `MOCK_MODE` | `auto` | `auto` / `always` / `never` |
 | `TAVILY_API_KEY` | — | Tavily 搜索 key（可选） |
 | `SLACK_WEBHOOK_URL` | — | Slack incoming webhook |
