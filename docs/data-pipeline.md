@@ -310,7 +310,7 @@ Extractor / Writer 的 system prompt 加：
 |---|---|
 | **法律风险**（爬 G2/小红书/Crunchbase） | P0 全部走官方 API；P1 仅在 robots.txt allow 时爬，且 per-domain ≤0.5 QPS；遵循 GDPR 个人数据脱敏 |
 | **存储爆炸** | embedding 1536 维 × float32 = 6KB/chunk；P0 全量 1 年估算 ~50 GB，pgvector hnsw 索引 ~30 GB |
-| **embedding 成本** | text-embedding-3-small $0.02/1M tokens；P0 月增 ~5M tokens = $0.10/月，可忽略 |
+| **embedding 成本** | 主流 1536 维 embedding 约 $0.02/1M tokens；P0 月增 ~5M tokens = $0.10/月，可忽略 |
 | **OAuth token 失效** | 每个 connector 实现 `Refresh()`，River retry 自动重新拉取 |
 | **数据漂移** | 每周 sample 100 条人工 review；建 dashboard 监控 ingest 质量 |
 | **冷启动** | 第一周 ingest **全量历史**（PH 历史 100k 产品 + HN 1 年 top stories），形成基础知识 |
