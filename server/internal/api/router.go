@@ -50,6 +50,10 @@ func (s *Server) Routes() http.Handler {
 		writeJSON(w, http.StatusOK, s.integrationStatus())
 	})
 
+	// v0.5: agent role registry
+	mux.HandleFunc("GET /api/agents/roles", s.handleGetRoles)
+	mux.HandleFunc("GET /api/agents/roles/{scenario}", s.handleGetRolesByScenario)
+
 	return s.withCORS(mux)
 }
 

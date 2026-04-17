@@ -165,6 +165,22 @@ export interface IntegrationStatus {
   jira: boolean;
 }
 
+// v0.5: 专业角色画像
+export interface RoleMeta {
+  key: string;
+  title: string;
+  title_en: string;
+  avatar: string;
+  specialty: string;
+  used_in: string[];
+}
+
+export async function listRolesByScenario(scenario: string): Promise<RoleMeta[]> {
+  const r = await fetch(`/api/agents/roles/${scenario}`);
+  if (!r.ok) return [];
+  return (await r.json()).roles ?? [];
+}
+
 export async function getIntegrationStatus(): Promise<IntegrationStatus> {
   const r = await fetch("/api/integrations/status");
   if (!r.ok) throw new Error("integrationStatus: " + r.status);

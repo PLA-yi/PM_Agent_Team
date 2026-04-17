@@ -29,11 +29,32 @@ func main() {
 	switch mode {
 	case "reddit":
 		demoReddit(ctx, arg)
+	case "hn", "hackernews":
+		demoHN(ctx, arg)
 	case "crawler":
 		demoCrawler(ctx, arg)
 	default:
 		fmt.Println("unknown mode:", mode)
 		os.Exit(2)
+	}
+}
+
+func demoHN(ctx context.Context, query string) {
+	hn := social.NewHackerNews()
+	posts, err := hn.SearchExpanded(ctx, query, 30)
+	if err != nil {
+		fmt.Println("ERR:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("=== HN expanded search: %q → %d posts ===\n\n", query, len(posts))
+	limit := 8
+	if len(posts) < limit {
+		limit = len(posts)
+	}
+	for i := 0; i < limit; i++ {
+		p := posts[i]
+		fmt.Printf("[%d] %s\n  by %s · %d↑ · %d 💬\n  %s\n\n",
+			i+1, p.Title, p.Author, p.Engagement.Likes, p.Engagement.Comments, p.URL)
 	}
 }
 

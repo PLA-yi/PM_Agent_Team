@@ -59,11 +59,12 @@ func main() {
 
 	// Social registry — Reddit 默认开（无需 key），其他平台读 env key
 	socialReg := social.NewRegistry(
-		social.NewReddit(),
-		social.NewX(os.Getenv("X_BEARER_TOKEN")),
-		social.NewDouyin(os.Getenv("DOUYIN_COOKIE")),
-		social.NewTikTok(os.Getenv("TIKTOK_SESSIONID")),
-		social.NewYouTube(os.Getenv("YOUTUBE_API_KEY")),
+		social.NewReddit(),                                       // 海外通用
+		social.NewHackerNews(),                                   // 海外开发者/创业 (无 key 免费)
+		social.NewX(os.Getenv("X_BEARER_TOKEN")),                 // 海外微博
+		social.NewDouyin(os.Getenv("DOUYIN_COOKIE")),             // 国内短视频
+		social.NewTikTok(os.Getenv("TIKTOK_SESSIONID")),          // 海外短视频
+		social.NewYouTube(os.Getenv("YOUTUBE_API_KEY")),          // 视频
 	)
 
 	bus := stream.NewBus()
