@@ -38,6 +38,20 @@ func (m *Mock) Complete(ctx context.Context, req Request) (*Response, error) {
 		return mockReviewerJSON(), nil
 	case strings.Contains(hint, "RE-WRITE PASS"):
 		return mockWriterMarkdown(last), nil
+	// ===== 需求分析模块 =====
+	case strings.Contains(hint, "REQUIREMENT_DISCOVERER"):
+		return mockReqDiscoverJSON(), nil
+	case strings.Contains(hint, "REQUIREMENT_ANALYZER"):
+		return mockReqAnalyzerJSON(), nil
+	case strings.Contains(hint, "REQUIREMENT_PRIORITIZER"):
+		return mockReqPrioritizerMD(last), nil
+	// ===== 需求验证模块 =====
+	case strings.Contains(hint, "HYPOTHESIS_GENERATOR"):
+		return mockHypothesisJSON(), nil
+	case strings.Contains(hint, "VALIDATION_EXECUTOR"):
+		return mockValidationJSON(), nil
+	case strings.Contains(hint, "VALIDATION_RISK_WRITER"):
+		return mockValidationRiskMD(last), nil
 	// ===== PRD 起草 =====
 	case strings.Contains(hint, "for PRD drafting"):
 		return mockPRDBackgroundJSON(), nil
@@ -278,6 +292,202 @@ func mockExtractorJSON() *Response {
 			},
 		},
 	})
+}
+
+// ===== 需求分析 mock =====
+func mockReqDiscoverJSON() *Response {
+	return jsonResponse(map[string]interface{}{
+		"requirements": []map[string]interface{}{
+			{"id": "R001", "title": "支持移动端离线编辑", "source": "user_voice",
+				"user_segment": "出差频繁的产品经理", "jtbd": "When 在地铁上, I want to 编辑文档, so I can 不浪费通勤时间",
+				"painpoint": "弱网环境下无法保存", "frequency": "daily"},
+			{"id": "R002", "title": "AI 自动生成访谈大纲", "source": "market_gap",
+				"user_segment": "新手 PM", "jtbd": "When 准备用户访谈, I want to 快速生成结构化问题, so I can 减少准备时间",
+				"painpoint": "每次都从空白开始", "frequency": "weekly"},
+			{"id": "R003", "title": "团队成员 @ 提醒", "source": "user_voice",
+				"user_segment": "5+ 人协作团队", "jtbd": "When 评审 PRD, I want to @ 同事, so I can 让相关人看到具体段落",
+				"painpoint": "评论散落各处难追踪", "frequency": "weekly"},
+			{"id": "R004", "title": "竞品定价变化自动告警", "source": "inferred",
+				"user_segment": "B2B SaaS PM", "jtbd": "When 竞品改价, I want to 第一时间收到通知, so I can 评估市场策略",
+				"painpoint": "靠手动巡检", "frequency": "occasional"},
+			{"id": "R005", "title": "需求 RICE 自动评分", "source": "market_gap",
+				"user_segment": "PM Lead", "jtbd": "When 排优先级, I want to 自动算 RICE, so I can 减少主观争论",
+				"painpoint": "靠 Excel 手算", "frequency": "weekly"},
+			{"id": "R006", "title": "PRD 模板库（按行业）", "source": "inferred",
+				"user_segment": "新加入团队的 PM", "jtbd": "When 写第一份 PRD, I want to 看行业模板, so I can 不踩坑",
+				"painpoint": "模板都散落各处", "frequency": "occasional"},
+		},
+	})
+}
+
+func mockReqAnalyzerJSON() *Response {
+	return jsonResponse(map[string]interface{}{
+		"scored": []map[string]interface{}{
+			{"id": "R001", "reach": 60, "impact": 2, "confidence": 0.8, "effort": 3, "kano_type": "performance"},
+			{"id": "R002", "reach": 80, "impact": 2, "confidence": 0.9, "effort": 2, "kano_type": "excitement"},
+			{"id": "R003", "reach": 40, "impact": 1, "confidence": 1.0, "effort": 1, "kano_type": "basic"},
+			{"id": "R004", "reach": 30, "impact": 1, "confidence": 0.7, "effort": 1.5, "kano_type": "performance"},
+			{"id": "R005", "reach": 50, "impact": 2, "confidence": 0.8, "effort": 2, "kano_type": "performance"},
+			{"id": "R006", "reach": 25, "impact": 0.5, "confidence": 1.0, "effort": 0.5, "kano_type": "basic"},
+		},
+	})
+}
+
+func mockReqPrioritizerMD(input string) *Response {
+	topic := truncate(input, 30)
+	var parsed struct{ Input string `json:"input"` }
+	if err := json.Unmarshal([]byte(input), &parsed); err == nil && parsed.Input != "" {
+		topic = truncate(parsed.Input, 30)
+	}
+	md := `# 需求优先级报告：` + topic + `
+
+> 由 PMHive Multi-Agent 自动生成 · Mock 模式
+
+## 一、需求总览
+共识别 **6 条需求**，按 RICE 排序后：
+- **P0 (RICE > 60)**: R002 AI 自动生成访谈大纲、R005 需求 RICE 自动评分
+- **P1 (30-60)**: R001 移动端离线编辑、R003 团队 @ 提醒
+- **P2 (<30)**: R004 竞品定价告警、R006 PRD 模板库
+
+## 二、Top 5 需求详解
+
+### R002 · AI 自动生成访谈大纲（RICE 72.0 · excitement）
+- **JTBD**: 准备用户访谈时快速生成结构化问题
+- **用户群**: 新手 PM
+- **推荐排期**: 本期 P0
+
+### R001 · 支持移动端离线编辑（RICE 32.0 · performance）
+- **JTBD**: 通勤时编辑文档不浪费时间
+- **用户群**: 出差频繁的 PM
+- **推荐排期**: 下期 P1
+
+### R005 · 需求 RICE 自动评分（RICE 40.0 · performance）
+- 减少主观排优先级争论
+- **推荐排期**: 本期 P0
+
+### R003 · 团队 @ 提醒（RICE 40.0 · basic）
+- Kano 类型 basic 意味着用户**期望必须有**
+- **推荐排期**: 紧急 P1
+
+### R006 · PRD 模板库（RICE 25.0 · basic）
+- 虽然 RICE 不高但是 basic 类型，建议本期完成
+
+## 三、Kano 矩阵分析
+- **basic (必做)**: R003 R006 — 不做用户会不满，是入场券
+- **performance (越多越好)**: R001 R004 R005 — 投入越多回报越线性
+- **excitement (惊喜)**: R002 — 抓手卖点，差异化关键
+
+## 四、本期建议
+**立刻做**：R002 (excitement) + R005 + R003 (basic)
+**延后**：R004 R006 待用户量上来后再优化
+`
+	return textResponse(md)
+}
+
+// ===== 需求验证 mock =====
+func mockHypothesisJSON() *Response {
+	return jsonResponse(map[string]interface{}{
+		"hypotheses": []map[string]interface{}{
+			{"id": "H001",
+				"statement": "我们认为 [一线 PM] 在 [写每日竞品调研报告时] 需要 [自动化工具]，因为 [手工调研太慢]",
+				"type": "problem", "confidence": 0.7},
+			{"id": "H002",
+				"statement": "我们认为 [PM] 愿意接受 [AI 给出的 SWOT 分析]，因为 [它能给出客观第三方视角]",
+				"type": "solution", "confidence": 0.5},
+			{"id": "H003",
+				"statement": "我们认为 [中小公司 PM] 愿意为 [此类工具] 付费 [$29-79/月]",
+				"type": "value", "confidence": 0.4},
+			{"id": "H004",
+				"statement": "我们认为 [PM 团队] 会把 PMHive 集成进 [Jira / 飞书] 工作流",
+				"type": "solution", "confidence": 0.6},
+		},
+	})
+}
+
+func mockValidationJSON() *Response {
+	return jsonResponse(map[string]interface{}{
+		"validations": []map[string]interface{}{
+			{"hypothesis_id": "H001", "method": "user_interview",
+				"evidence": "Reddit r/ProductManagement 6 个月内 200+ 帖子抱怨'每周调研竞品就花 8-10 小时'",
+				"verdict": "confirmed", "sources": []string{"r/ProductManagement", "Lenny's Newsletter"}},
+			{"hypothesis_id": "H001", "method": "market_data",
+				"evidence": "Maze 2025 User Research Report: 'PM 周均花 12h 在调研，60% 重复'",
+				"verdict": "confirmed", "sources": []string{"Maze 2025 Report"}},
+			{"hypothesis_id": "H002", "method": "desk_research",
+				"evidence": "Productboard / Aha! 用户访谈显示 70% PM 认可 AI 抽取的客观性",
+				"verdict": "confirmed", "sources": []string{"Productboard 2024 user study"}},
+			{"hypothesis_id": "H003", "method": "market_data",
+				"evidence": "Notion AI $10/mo / Productboard $19-59/mo 已验证 PM 个人付费意愿区间",
+				"verdict": "confirmed", "sources": []string{"Productboard pricing", "Notion pricing"}},
+			{"hypothesis_id": "H003", "method": "user_interview",
+				"evidence": "5 个潜在客户 PM 调研中 3 个表示愿意付 $29-49，2 个要求免费版",
+				"verdict": "inconclusive", "sources": []string{"内部 5 人访谈"}},
+			{"hypothesis_id": "H004", "method": "desk_research",
+				"evidence": "Jira marketplace 类似 add-on 安装率仅 8%，集成驱动转化弱",
+				"verdict": "refuted", "sources": []string{"Jira marketplace stats"}},
+		},
+	})
+}
+
+func mockValidationRiskMD(input string) *Response {
+	topic := truncate(input, 30)
+	var parsed struct{ Input string `json:"input"` }
+	if err := json.Unmarshal([]byte(input), &parsed); err == nil && parsed.Input != "" {
+		topic = truncate(parsed.Input, 30)
+	}
+	md := `# 需求验证报告：` + topic + `
+
+> 由 PMHive Multi-Agent 自动生成 · Mock 模式
+
+## 一、待验证假设
+| ID | 类型 | 假设 | 当前可信度 |
+|---|---|---|---|
+| H001 | problem | 一线 PM 在写每日竞品调研时需要自动化工具 | 0.7 |
+| H002 | solution | PM 愿意接受 AI 给出的 SWOT 分析 | 0.5 |
+| H003 | value | 中小公司 PM 愿意付 $29-79/月 | 0.4 |
+| H004 | solution | PM 团队会把工具集成进 Jira/飞书工作流 | 0.6 |
+
+## 二、验证执行结果
+
+### H001 problem ✅ 已确认
+- **user_interview**: Reddit r/ProductManagement 200+ 抱怨调研耗时 [1]
+- **market_data**: Maze 2025 报告 PM 周均 12h 调研 [2]
+
+### H002 solution ✅ 已确认
+- **desk_research**: Productboard 用户研究 70% 认可 AI 客观性 [3]
+
+### H003 value ⚠️ 不充分
+- **market_data**: 已确认价格区间 [4]
+- **user_interview**: 5 人访谈中 3:2 分歧，**样本量太少**
+
+### H004 solution ❌ 已反驳
+- **desk_research**: Jira marketplace 类似 add-on 安装率仅 8%
+
+## 三、验证盲点与风险
+
+| 风险 | 严重度 | 缓解 |
+|---|---|---|
+| H003 付费意愿样本量太少（n=5）| **high** | 扩到 30+ PM 访谈 + 落地页 A/B 测试 |
+| H001 假设的"自动化工具"颗粒度模糊 | medium | 拆成"摘要工具"vs"完整调研报告"再分别验证 |
+| H004 反驳但没探索"非集成"的成功路径 | medium | 看 Notion 的独立工具增长曲线作对照 |
+| 缺乏国内 PM 反馈（Reddit 主英文）| high | 扩展知乎/小红书数据源 |
+
+## 四、下一步建议
+1. **立刻**：H003 扩样本到 30 人付费意愿访谈
+2. **本周**：H001 二次拆解后做问卷 (n=100)
+3. **本月**：H004 改方向，验证"独立工具"增长假设
+4. **暂搁**：进一步技术方案验证等市场假设跑稳再回头
+
+<!-- RISKS_JSON_START
+{"risks":[
+{"risk":"H003 付费意愿样本量太少（n=5）","severity":"high","mitigation":"扩到 30+ PM 访谈 + 落地页 A/B 测试"},
+{"risk":"H001 假设的'自动化工具'颗粒度模糊","severity":"medium","mitigation":"拆成'摘要工具'vs'完整调研报告'再分别验证"},
+{"risk":"H004 反驳但没探索非集成的成功路径","severity":"medium","mitigation":"看 Notion 的独立工具增长曲线作对照"},
+{"risk":"缺乏国内 PM 反馈（Reddit 主英文）","severity":"high","mitigation":"扩展知乎/小红书数据源"}
+]}
+RISKS_JSON_END -->
+`
+	return textResponse(md)
 }
 
 func mockReviewerJSON() *Response {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AgentEvent,
   IntegrationStatus,
+  MODULES,
   Project,
   Report,
   SCENARIOS,
@@ -27,7 +28,7 @@ export function App() {
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [report, setReport] = useState<Report | null>(null);
-  const [scenario, setScenario] = useState<Scenario>("competitor_research");
+  const [scenario, setScenario] = useState<Scenario>("requirement_analysis");
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -170,20 +171,55 @@ export function App() {
         <aside className="flex flex-col gap-4 overflow-hidden">
           {/* Composer */}
           <div className="ios-card p-4 space-y-3">
-            <div className="grid grid-cols-2 border border-border rounded-md overflow-hidden">
-              {SCENARIOS.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => { setScenario(s.id); setDraft(""); }}
-                  className={`text-xs py-1.5 transition tracking-tight font-medium
-                    ${i % 2 === 1 ? "border-l border-border" : ""}
-                    ${i >= 2 ? "border-t border-border" : ""}
-                    ${scenario === s.id ? "bg-ink text-white" : "bg-white text-muted hover:bg-bg2 hover:text-ink"}`}
-                >
-                  {s.label}
-                </button>
-              ))}
+            {/* 3 大 PM 板块（顶级抓手）*/}
+            <div className="space-y-1.5">
+              {MODULES.map((m) => {
+                const active = scenario === m.scenario;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => { setScenario(m.scenario); setDraft(""); }}
+                    className={`w-full text-left rounded-lg p-2.5 transition border
+                      ${active
+                        ? "bg-ink text-white border-ink shadow-sm"
+                        : "bg-white border-border hover:bg-bg2"}`}
+                    style={active ? { borderLeftWidth: 4, borderLeftColor: m.accent } : undefined}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{m.emoji}</span>
+                      <span className={`text-sm font-semibold tracking-tight ${active ? "text-white" : "text-ink"}`}>
+                        {m.label}
+                      </span>
+                      <span className={`ml-auto text-[10px] mono uppercase tracking-wider ${active ? "text-white/60" : "text-muted2"}`}>
+                        {m.stages.length} stages
+                      </span>
+                    </div>
+                    <p className={`text-[11px] mt-0.5 ${active ? "text-white/70" : "text-muted"}`}>{m.desc}</p>
+                  </button>
+                );
+              })}
             </div>
+
+            {/* 副工具下拉（不常用场景）*/}
+            <details className="group">
+              <summary className="text-[11px] text-muted2 cursor-pointer hover:text-ink select-none uppercase tracking-wider font-semibold">
+                + 辅助工具（访谈分析 / PRD 起草 / 社聆）
+              </summary>
+              <div className="grid grid-cols-3 gap-1 mt-2">
+                {SCENARIOS.filter(s => !MODULES.some(m => m.scenario === s.id)).map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => { setScenario(s.id); setDraft(""); }}
+                    className={`text-[11px] py-1.5 rounded border transition
+                      ${scenario === s.id
+                        ? "bg-ink text-white border-ink"
+                        : "bg-white border-border text-muted hover:bg-bg2"}`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </details>
 
             <textarea
               value={draft}

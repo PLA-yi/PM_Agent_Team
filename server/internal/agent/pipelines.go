@@ -18,8 +18,48 @@ func PipelineFor(scenario string) *Pipeline {
 	case "social_listening":
 		p := SocialListeningPipeline()
 		return &p
+	case "requirement_analysis":
+		p := RequirementAnalysisPipeline()
+		return &p
+	case "requirement_validation":
+		p := RequirementValidationPipeline()
+		return &p
 	default:
 		return nil
+	}
+}
+
+// RequirementAnalysisPipeline 需求分析：发现 → 评分 → 排序
+//   Coordinator → Discoverer → SocialListener (optional, Reddit 拉真实声量) →
+//   Analyzer (RICE+Kano 打分) → Prioritizer (排序+写报告) → Reviewer
+func RequirementAnalysisPipeline() Coordinator {
+	return Coordinator{
+		Stages: []Stage{
+			{Name: "discovering", Agents: []Agent{RequirementDiscoverer{}}},
+			{Name: "user_voice", Agents: []Agent{
+				SocialListener{K: 100, WriteToChunks: false, Optional: true},
+			}},
+			{Name: "scoring", Agents: []Agent{RequirementAnalyzer{}}},
+			{Name: "writing", Agents: []Agent{RequirementPrioritizer{}}},
+			{Name: "reviewing", Agents: []Agent{Reviewer{Iteration: 1}}},
+		},
+	}
+}
+
+// RequirementValidationPipeline 需求验证：假设 → 执行 → 风险
+//   Coordinator → HypothesisGenerator → SocialListener (拉用户原声做证据) →
+//   ValidationExecutor → RiskWriter → Reviewer
+func RequirementValidationPipeline() Coordinator {
+	return Coordinator{
+		Stages: []Stage{
+			{Name: "hypothesizing", Agents: []Agent{HypothesisGenerator{}}},
+			{Name: "user_voice", Agents: []Agent{
+				SocialListener{K: 100, WriteToChunks: false, Optional: true},
+			}},
+			{Name: "validating", Agents: []Agent{ValidationExecutor{}}},
+			{Name: "writing", Agents: []Agent{ValidationRiskWriter{}}},
+			{Name: "reviewing", Agents: []Agent{Reviewer{Iteration: 1}}},
+		},
 	}
 }
 

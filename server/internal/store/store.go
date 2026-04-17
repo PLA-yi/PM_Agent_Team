@@ -32,10 +32,12 @@ const (
 type Scenario string
 
 const (
-	ScenarioCompetitorResearch Scenario = "competitor_research"
-	ScenarioInterviewAnalysis  Scenario = "interview_analysis"
-	ScenarioPRDDrafting        Scenario = "prd_drafting"
-	ScenarioSocialListening    Scenario = "social_listening"
+	ScenarioCompetitorResearch   Scenario = "competitor_research"
+	ScenarioInterviewAnalysis    Scenario = "interview_analysis"
+	ScenarioPRDDrafting          Scenario = "prd_drafting"
+	ScenarioSocialListening      Scenario = "social_listening"
+	ScenarioRequirementAnalysis  Scenario = "requirement_analysis"
+	ScenarioRequirementValidation Scenario = "requirement_validation"
 )
 
 // Task 一次研究任务

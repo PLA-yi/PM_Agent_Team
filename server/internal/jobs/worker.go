@@ -118,6 +118,10 @@ func (w *Worker) run(taskID uuid.UUID) {
 			"prd_sections": st.PRDSections,
 			"user_stories": st.UserStories,
 			"review":       st.Review,
+			"requirements": st.Requirements,
+			"hypotheses":   st.Hypotheses,
+			"validations":  st.Validations,
+			"risks":        st.Risks,
 		},
 	}
 	if err := w.Store.SaveReport(ctx, rep); err != nil {
@@ -320,10 +324,12 @@ func titleFor(scenario, input string) string {
 		input = input[:40] + "..."
 	}
 	prefix := map[string]string{
-		"competitor_research": "竞品调研",
-		"interview_analysis":  "访谈分析",
-		"prd_drafting":        "PRD 草稿",
-		"social_listening":    "社交聆听",
+		"competitor_research":    "竞品调研",
+		"interview_analysis":     "访谈分析",
+		"prd_drafting":           "PRD 草稿",
+		"social_listening":       "社交聆听",
+		"requirement_analysis":   "需求分析",
+		"requirement_validation": "需求验证",
 	}[scenario]
 	if prefix == "" {
 		prefix = "任务"

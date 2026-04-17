@@ -2,7 +2,56 @@
 
 export type TaskStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
 
-export type Scenario = "competitor_research" | "interview_analysis" | "prd_drafting" | "social_listening";
+export type Scenario =
+  | "requirement_analysis"
+  | "competitor_research"
+  | "requirement_validation"
+  | "interview_analysis"
+  | "prd_drafting"
+  | "social_listening";
+
+// 三大 PM 板块
+export type PMModule = "requirement" | "competitor" | "validation";
+
+export interface ModuleDef {
+  id: PMModule;
+  label: string;
+  scenario: Scenario;
+  desc: string;
+  emoji: string;
+  accent: string; // hex
+  stages: string[]; // 中文阶段名
+}
+
+export const MODULES: ModuleDef[] = [
+  {
+    id: "requirement",
+    label: "需求分析",
+    scenario: "requirement_analysis",
+    desc: "找到需求 · 深度分析 · RICE+Kano 排序",
+    emoji: "📋",
+    accent: "#3B82F6",
+    stages: ["需求发现", "用户原声", "RICE 评分", "排序与建议"],
+  },
+  {
+    id: "competitor",
+    label: "竞品调研",
+    scenario: "competitor_research",
+    desc: "横向矩阵 · 用户原声 · SWOT 差异化",
+    emoji: "🔍",
+    accent: "#FF9500",
+    stages: ["规划候选", "搜索+抓取+社聆", "结构化", "SWOT 分析", "撰写", "复审"],
+  },
+  {
+    id: "validation",
+    label: "需求验证",
+    scenario: "requirement_validation",
+    desc: "假设拆解 · 多方法验证 · 盲点识别",
+    emoji: "✅",
+    accent: "#16A34A",
+    stages: ["假设生成", "用户原声", "验证执行", "风险盲点"],
+  },
+];
 
 export interface Task {
   id: string;
@@ -143,11 +192,29 @@ export async function createJiraIssue(taskId: string, projectKey: string): Promi
 
 export const SCENARIOS: { id: Scenario; label: string; short: string; placeholder: string; suggested: string[] }[] = [
   {
+    id: "requirement_analysis",
+    label: "需求分析",
+    short: "需求",
+    placeholder: "描述你的产品/市场上下文（Agent 会自动发现需求 + 评分排序）\n例：我们做一个面向 SaaS PM 的协作工具，已上线 3 个月有 200 付费用户...",
+    suggested: ["AI 笔记 SaaS 待优化方向", "面向小红书博主的内容管理工具", "B2B SaaS 协作平台 v2 规划"],
+  },
+  {
     id: "competitor_research",
     label: "竞品调研",
     short: "竞品",
     placeholder: "一句话描述要调研的赛道或产品（如：国内 AI 笔记类产品）",
     suggested: ["国内 AI 笔记类产品", "海外低代码工作流平台", "AI 编码 IDE 赛道"],
+  },
+  {
+    id: "requirement_validation",
+    label: "需求验证",
+    short: "验证",
+    placeholder: "描述待验证的需求/假设（Agent 会拆 problem/solution/value 三类假设并执行验证）\n例：PM 需要 AI 自动生成竞品调研报告且愿意付 $29/月",
+    suggested: [
+      "PM 愿意为 AI 调研工具付 $29/月",
+      "用户访谈分析自动化需求是否真存在",
+      "Jira 集成是否能驱动转化",
+    ],
   },
   {
     id: "interview_analysis",

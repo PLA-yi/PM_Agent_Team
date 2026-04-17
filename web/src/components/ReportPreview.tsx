@@ -45,6 +45,9 @@ export function ReportPreview({ report, loading, taskId, taskStatus, onFollowUp 
 
       {review && <ReviewCard review={review} />}
 
+      {/* 按 scenario 渲染结构化面板（在 markdown 前）*/}
+      <ScenarioPanel report={report} />
+
       <div className="prose-pmhive">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{report.markdown}</ReactMarkdown>
       </div>
@@ -74,6 +77,168 @@ export function ReportPreview({ report, loading, taskId, taskStatus, onFollowUp 
       {/* 追问框 — 仅当任务完成时显示 */}
       {taskId && taskStatus === "succeeded" && (
         <FollowUpBox taskId={taskId} onSubmit={onFollowUp} />
+      )}
+    </div>
+  );
+}
+
+// ScenarioPanel 按 scenario 类型渲染专属结构化面板（在 markdown 报告之前）
+function ScenarioPanel({ report }: { report: Report }) {
+  const meta = (report.metadata ?? {}) as any;
+  const scenario = meta.scenario as string | undefined;
+
+  if (scenario === "requirement_analysis" && Array.isArray(meta.requirements) && meta.requirements.length > 0) {
+    return <RequirementTable requirements={meta.requirements} />;
+  }
+  if (scenario === "requirement_validation") {
+    return <ValidationPanel hypotheses={meta.hypotheses ?? []} validations={meta.validations ?? []} risks={meta.risks ?? []} />;
+  }
+  return null;
+}
+
+function RequirementTable({ requirements }: { requirements: any[] }) {
+  // 按 RICE 排序
+  const sorted = [...requirements].sort((a, b) => (b.rice_score ?? 0) - (a.rice_score ?? 0));
+  const kanoColor: Record<string, string> = {
+    basic: "bg-rose-100 text-rose-700",
+    performance: "bg-blue-100 text-blue-700",
+    excitement: "bg-amber-100 text-amber-700",
+    indifferent: "bg-zinc-100 text-zinc-600",
+  };
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-semibold text-ink uppercase tracking-wider">需求清单 · 按 RICE 排序</h3>
+        <span className="text-xs text-muted2 mono">{sorted.length} 条</span>
+      </div>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <table className="w-full text-xs">
+          <thead className="bg-bg2 text-muted2 uppercase tracking-wider">
+            <tr>
+              <th className="text-left px-3 py-2 font-semibold w-10">ID</th>
+              <th className="text-left px-3 py-2 font-semibold">需求</th>
+              <th className="text-right px-3 py-2 font-semibold w-16">RICE</th>
+              <th className="text-center px-3 py-2 font-semibold w-20">Kano</th>
+              <th className="text-center px-3 py-2 font-semibold w-12">来源</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r, i) => {
+              const score = (r.rice_score ?? 0).toFixed(1);
+              const isP0 = (r.rice_score ?? 0) >= 60;
+              const isP1 = (r.rice_score ?? 0) >= 30 && (r.rice_score ?? 0) < 60;
+              return (
+                <tr key={r.id ?? i} className="border-t border-border hover:bg-bg2/40">
+                  <td className="px-3 py-2 mono text-muted2">{r.id ?? `R${i+1}`}</td>
+                  <td className="px-3 py-2">
+                    <div className="text-ink leading-snug">{r.title}</div>
+                    {r.jtbd && <div className="text-[10px] text-muted2 mt-0.5 italic">{r.jtbd}</div>}
+                  </td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    <span className={`mono font-semibold ${isP0 ? "text-success" : isP1 ? "text-warn" : "text-muted2"}`}>
+                      {score}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    {r.kano_type && (
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${kanoColor[r.kano_type] ?? "bg-zinc-100"}`}>
+                        {r.kano_type}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-center text-[10px] text-muted2 mono">
+                    {r.source === "user_voice" ? "🎙" : r.source === "market_gap" ? "📊" : "💡"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function ValidationPanel({ hypotheses, validations, risks }: { hypotheses: any[]; validations: any[]; risks: any[] }) {
+  const verdictColor: Record<string, string> = {
+    confirmed: "bg-success/10 text-success",
+    refuted: "bg-danger/10 text-danger",
+    inconclusive: "bg-warn/10 text-warn",
+  };
+  const sevColor: Record<string, string> = {
+    high: "text-danger",
+    medium: "text-warn",
+    low: "text-muted2",
+  };
+  // 按 hypothesis 聚合 validations
+  const validationsByHypo: Record<string, any[]> = {};
+  for (const v of validations) {
+    if (!validationsByHypo[v.hypothesis_id]) validationsByHypo[v.hypothesis_id] = [];
+    validationsByHypo[v.hypothesis_id].push(v);
+  }
+
+  return (
+    <div className="mb-6 space-y-4">
+      {/* Hypotheses */}
+      {hypotheses.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2">假设清单 · {hypotheses.length} 条</h3>
+          <div className="space-y-2">
+            {hypotheses.map((h: any) => (
+              <div key={h.id} className="rounded-lg border border-border p-3 bg-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="mono text-[10px] text-muted2">{h.id}</span>
+                  <span className="ios-chip text-[10px]">{h.type}</span>
+                  <span className="ml-auto text-[10px] text-muted2">可信度 <span className="mono text-ink">{(h.confidence ?? 0).toFixed(2)}</span></span>
+                </div>
+                <p className="text-xs text-ink leading-relaxed">{h.statement}</p>
+                {/* validations under this hypothesis */}
+                {validationsByHypo[h.id] && (
+                  <div className="mt-2 pt-2 border-t border-border space-y-1.5">
+                    {validationsByHypo[h.id].map((v: any, vi: number) => (
+                      <div key={vi} className="flex items-start gap-2 text-[11px]">
+                        <span className={`px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider text-[9px] ${verdictColor[v.verdict] ?? "bg-zinc-100"}`}>
+                          {v.verdict}
+                        </span>
+                        <span className="mono text-muted2 shrink-0">{v.method}</span>
+                        <span className="text-muted">{v.evidence}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Risks */}
+      {risks.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2">验证盲点 / 风险 · {risks.length} 条</h3>
+          <div className="rounded-lg border border-border overflow-hidden">
+            <table className="w-full text-xs">
+              <thead className="bg-bg2 text-muted2 uppercase tracking-wider">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold w-16">严重度</th>
+                  <th className="text-left px-3 py-2 font-semibold">风险</th>
+                  <th className="text-left px-3 py-2 font-semibold">缓解</th>
+                </tr>
+              </thead>
+              <tbody>
+                {risks.map((r: any, i: number) => (
+                  <tr key={i} className="border-t border-border">
+                    <td className={`px-3 py-2 font-semibold uppercase tracking-wider text-[10px] ${sevColor[r.severity] ?? "text-muted"}`}>
+                      {r.severity}
+                    </td>
+                    <td className="px-3 py-2 text-ink">{r.risk}</td>
+                    <td className="px-3 py-2 text-muted">{r.mitigation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -51,7 +51,9 @@ func (s *Server) handleCreateTask(w http.ResponseWriter, r *http.Request) {
 	case string(store.ScenarioCompetitorResearch),
 		string(store.ScenarioInterviewAnalysis),
 		string(store.ScenarioPRDDrafting),
-		string(store.ScenarioSocialListening):
+		string(store.ScenarioSocialListening),
+		string(store.ScenarioRequirementAnalysis),
+		string(store.ScenarioRequirementValidation):
 		// ok
 	default:
 		writeErr(w, http.StatusBadRequest, "unknown scenario: "+req.Scenario)

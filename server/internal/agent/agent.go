@@ -106,7 +106,57 @@ type State struct {
 	// v0.7+: 项目级长期记忆（来自 Project KB，跑任务前由 worker 注入）
 	PriorContext string
 
+	// v0.4 PM 板块：需求分析专用
+	Requirements []Requirement
+
+	// v0.4 PM 板块：需求验证专用
+	Hypotheses    []Hypothesis
+	Validations   []ValidationCheck
+	Risks         []ValidationRisk
+
 	mu sync.Mutex
+}
+
+// Requirement 一条需求
+type Requirement struct {
+	ID          string  `json:"id"`           // R001 / R002
+	Title       string  `json:"title"`
+	Source      string  `json:"source"`       // user_voice / market_gap / inferred
+	UserSegment string  `json:"user_segment"` // 目标用户群
+	JobToBeDone string  `json:"jtbd"`         // Jobs-to-be-Done 描述
+	Painpoint   string  `json:"painpoint"`
+	Frequency   string  `json:"frequency"`    // daily / weekly / occasional
+	Reach       int     `json:"reach"`        // RICE: 0-100
+	Impact      float64 `json:"impact"`       // RICE: 0.25 / 0.5 / 1 / 2 / 3
+	Confidence  float64 `json:"confidence"`   // RICE: 0-1
+	Effort      float64 `json:"effort"`       // RICE: person-month
+	RICEScore   float64 `json:"rice_score"`   // = Reach × Impact × Confidence / Effort
+	KanoType    string  `json:"kano_type"`    // basic / performance / excitement / indifferent
+	Sources     []string `json:"sources"`     // 来源链接
+}
+
+// Hypothesis 待验证的产品假设
+type Hypothesis struct {
+	ID         string `json:"id"`
+	Statement  string `json:"statement"`     // "我们认为 X 用户在 Y 场景下需要 Z"
+	Type       string `json:"type"`          // problem / solution / value
+	Confidence float64 `json:"confidence"`   // 0-1 当前可信度
+}
+
+// ValidationCheck 一项验证执行
+type ValidationCheck struct {
+	HypothesisID string   `json:"hypothesis_id"`
+	Method       string   `json:"method"`        // user_interview / market_data / desk_research / a_b_test
+	Evidence     string   `json:"evidence"`      // 找到的支撑/反驳证据
+	Verdict      string   `json:"verdict"`       // confirmed / refuted / inconclusive
+	Sources      []string `json:"sources"`
+}
+
+// ValidationRisk 验证盲点 / 风险
+type ValidationRisk struct {
+	Risk       string `json:"risk"`
+	Severity   string `json:"severity"`      // high / medium / low
+	Mitigation string `json:"mitigation"`
 }
 
 // ReviewResult Reviewer Agent 给报告打的分
