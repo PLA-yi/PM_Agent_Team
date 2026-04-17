@@ -12,7 +12,6 @@ import { TaskList } from "../components/TaskList";
 import { AgentTimeline } from "../components/AgentTimeline";
 import { ReportPreview } from "../components/ReportPreview";
 import { PostsViewer } from "../components/PostsViewer";
-import { AgentRoster } from "../components/AgentRoster";
 
 interface Props {
   module: ModuleDef;
@@ -183,9 +182,6 @@ export function ModulePage({ module }: Props) {
             ))}
           </div>
         </div>
-
-        {/* Agent Roster */}
-        <AgentRoster scenario={module.scenario} events={events} />
 
         {/* 输入 */}
         <div className="ios-card p-4 space-y-3">
